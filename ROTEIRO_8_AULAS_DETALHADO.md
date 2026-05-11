@@ -27,7 +27,7 @@ Diferenca console x web:
 
 Exemplos reais:
 
-- Google, Instagram, Spotify = todastem APIs que frontend consome.
+- Google, Instagram, Spotify = todas tem APIs que frontend consome.
 - Backend fornece dados em JSON.
 - Frontend exibe ao usuario.
 
@@ -43,6 +43,21 @@ Beneficios:
 - Comunidade grande.
 - Produzido por Pivotal (empresa respeitada).
 
+#### Qual e a diferenca entre Spring e Spring Boot?
+
+Spring e o ecossistema original de bibliotecas Java para construir aplicacoes corporativas.
+
+Spring Boot e uma camada por cima do Spring que facilita o uso do framework.
+
+- Spring: voce monta a aplicacao, configura beans, servidor e dependencias.
+- Spring Boot: ele faz a configuracao automaticamente, fornece starters e roda com servidor embutido.
+- Spring Boot usa Spring internamente; ele nao substitui o Spring, apenas reduz o trabalho de configuracao.
+
+Exemplo:
+
+- Com Spring puro, voce precisa configurar manualmente o servidor, o datasource e os componentes.
+- Com Spring Boot, basta colocar `@SpringBootApplication`, escolher as dependencias e rodar `mvn spring-boot:run`.
+
 #### O que e Angular?
 
 Framework JavaScript para fazer interfaces web.
@@ -54,6 +69,63 @@ Por que Angular?
 - Digitado (TypeScript, menos erros).
 - Padronizado (bom para ensino).
 - Ferramenta CLI poderosa.
+
+#### O que e Maven?
+
+Apache Maven = gerenciador de dependencias e build para Java.
+
+Build = processo de compilar, testar e empacotar codigo.
+
+Problema sem Maven:
+
+- Baixar manualmente cada biblioteca (jar).
+- Adicionar no projeto manualmente.
+- Descobrir incompatibilidades entre versoes.
+- Muito trabalhoso.
+
+Solucao com Maven:
+
+- Arquivo pom.xml lista dependencias desejadas.
+- Maven baixa automaticamente.
+- Maven cuida de compatibilidade de versoes.
+- Maven compila, testa, cria executavel.
+
+Exemplo pom.xml:
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>3.2.0</version>
+  </dependency>
+</dependencies>
+```
+
+Maven vai:
+
+1. Baixar spring-boot-starter-web versao 3.2.0.
+2. Baixar todas as dependencias desse projeto.
+3. Colocar tudo em uma pasta (target).
+4. Disponibilizar para compilacao.
+
+Comandos Maven comuns:
+
+```bash
+mvn clean         # limpa pasta target
+mvn compile       # compila codigo
+mvn test          # roda testes
+mvn package       # empacota .jar
+mvn spring-boot:run # executa aplicacao
+```
+
+Ciclo de vida Maven:
+
+clean → validate → compile → test → package → install → deploy
+
+Cada fase executa as anteriores.
+
+---
 
 ### Parte 2: Instalacao e Verificacao (60 min)
 
@@ -402,10 +474,10 @@ public class TipoProduto {
 
 Tabela no banco:
 
-| id | nome            |
-|----|-----------------|
-| 1  | Eletronico      |
-| 2  | Alimento        |
+| id | nome       |
+| -- | ---------- |
+| 1  | Eletronico |
+| 2  | Alimento   |
 
 #### Exemplo: Produto
 
@@ -434,10 +506,10 @@ public class Produto {
 
 Tabela no banco:
 
-| id | nome           | preco | tipo_id |
-|----|----------------|-------|---------|
-| 1  | Notebook       | 3000  | 1       |
-| 2  | Maçã           | 5     | 2       |
+| id | nome     | preco | tipo_id |
+| -- | -------- | ----- | ------- |
+| 1  | Notebook | 3000  | 1       |
+| 2  | Maçã   | 5     | 2       |
 
 ### Parte 2: Criar entidades no projeto (60 min)
 
@@ -457,33 +529,33 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "tipo_produto")
 public class TipoProduto {
-    
+  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+  
     @Column(nullable = false, length = 100)
     private String nome;
-    
+  
     public TipoProduto() {}
-    
+  
     public TipoProduto(String nome) {
         this.nome = nome;
     }
-    
+  
     // Getters e setters
     public Long getId() {
         return id;
     }
-    
+  
     public void setId(Long id) {
         this.id = id;
     }
-    
+  
     public String getNome() {
         return nome;
     }
-    
+  
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -502,58 +574,58 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "produto")
 public class Produto {
-    
+  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+  
     @Column(nullable = false, length = 150)
     private String nome;
-    
+  
     @Column(nullable = false)
     private Double preco;
-    
+  
     @ManyToOne
     @JoinColumn(name = "tipo_id", nullable = false)
     private TipoProduto tipo;
-    
+  
     public Produto() {}
-    
+  
     public Produto(String nome, Double preco, TipoProduto tipo) {
         this.nome = nome;
         this.preco = preco;
         this.tipo = tipo;
     }
-    
+  
     // Getters e setters
     public Long getId() {
         return id;
     }
-    
+  
     public void setId(Long id) {
         this.id = id;
     }
-    
+  
     public String getNome() {
         return nome;
     }
-    
+  
     public void setNome(String nome) {
         this.nome = nome;
     }
-    
+  
     public Double getPreco() {
         return preco;
     }
-    
+  
     public void setPreco(Double preco) {
         this.preco = preco;
     }
-    
+  
     public TipoProduto getTipo() {
         return tipo;
     }
-    
+  
     public void setTipo(TipoProduto tipo) {
         this.tipo = tipo;
     }
@@ -692,38 +764,38 @@ package br.unifor.produtosapi.dto;
 import jakarta.validation.constraints.*;
 
 public class ProdutoRequest {
-    
+  
     @NotBlank(message = "Nome nao pode estar vazio")
     private String nome;
-    
+  
     @NotNull(message = "Preco nao pode ser nulo")
     @Positive(message = "Preco deve ser maior que zero")
     private Double preco;
-    
+  
     @NotNull(message = "Tipo nao pode ser nulo")
     private Long tipoId;
-    
+  
     // Getters e setters
     public String getNome() {
         return nome;
     }
-    
+  
     public void setNome(String nome) {
         this.nome = nome;
     }
-    
+  
     public Double getPreco() {
         return preco;
     }
-    
+  
     public void setPreco(Double preco) {
         this.preco = preco;
     }
-    
+  
     public Long getTipoId() {
         return tipoId;
     }
-    
+  
     public void setTipoId(Long tipoId) {
         this.tipoId = tipoId;
     }
@@ -738,32 +810,32 @@ Arquivo: src/main/java/br/unifor/produtosapi/dto/ProdutoResponse.java
 package br.unifor.produtosapi.dto;
 
 public class ProdutoResponse {
-    
+  
     private Long id;
     private String nome;
     private Double preco;
     private String tipoNome;
-    
+  
     public ProdutoResponse(Long id, String nome, Double preco, String tipoNome) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
         this.tipoNome = tipoNome;
     }
-    
+  
     // Getters
     public Long getId() {
         return id;
     }
-    
+  
     public String getNome() {
         return nome;
     }
-    
+  
     public Double getPreco() {
         return preco;
     }
-    
+  
     public String getTipoNome() {
         return tipoNome;
     }
@@ -789,16 +861,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProdutoService {
-    
+  
     private final ProdutoRepository produtoRepository;
     private final TipoProdutoRepository tipoProdutoRepository;
-    
+  
     public ProdutoService(ProdutoRepository produtoRepository,
                           TipoProdutoRepository tipoProdutoRepository) {
         this.produtoRepository = produtoRepository;
         this.tipoProdutoRepository = tipoProdutoRepository;
     }
-    
+  
     public List<ProdutoResponse> listar() {
         return produtoRepository.findAll().stream()
             .map(p -> new ProdutoResponse(
@@ -809,18 +881,18 @@ public class ProdutoService {
             ))
             .collect(Collectors.toList());
     }
-    
+  
     public ProdutoResponse criar(ProdutoRequest request) {
         TipoProduto tipo = tipoProdutoRepository.findById(request.getTipoId())
             .orElseThrow(() -> new RuntimeException("Tipo nao encontrado"));
-        
+    
         Produto produto = new Produto(request.getNome(), request.getPreco(), tipo);
         Produto salvo = produtoRepository.save(produto);
-        
+    
         return new ProdutoResponse(salvo.getId(), salvo.getNome(), 
             salvo.getPreco(), salvo.getTipo().getNome());
     }
-    
+  
     public void deletar(Long id) {
         produtoRepository.deleteById(id);
     }
@@ -841,17 +913,17 @@ import java.util.List;
 
 @Service
 public class TipoProdutoService {
-    
+  
     private final TipoProdutoRepository repository;
-    
+  
     public TipoProdutoService(TipoProdutoRepository repository) {
         this.repository = repository;
     }
-    
+  
     public List<TipoProduto> listar() {
         return repository.findAll();
     }
-    
+  
     public TipoProduto criar(String nome) {
         TipoProduto tipo = new TipoProduto(nome);
         return repository.save(tipo);
@@ -869,14 +941,14 @@ package br.unifor.produtosapi.dto;
 import jakarta.validation.constraints.NotBlank;
 
 public class TipoProdutoRequest {
-    
+  
     @NotBlank(message = "Nome nao pode estar vazio")
     private String nome;
-    
+  
     public String getNome() {
         return nome;
     }
-    
+  
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -960,18 +1032,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/tipos")
 public class TipoProdutoController {
-    
+  
     private final TipoProdutoService service;
-    
+  
     public TipoProdutoController(TipoProdutoService service) {
         this.service = service;
     }
-    
+  
     @GetMapping
     public List<TipoProduto> listar() {
         return service.listar();
     }
-    
+  
     @PostMapping
     public ResponseEntity<TipoProduto> criar(@Valid @RequestBody TipoProdutoRequest request) {
         TipoProduto tipo = service.criar(request.getNome());
@@ -999,23 +1071,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoController {
-    
+  
     private final ProdutoService service;
-    
+  
     public ProdutoController(ProdutoService service) {
         this.service = service;
     }
-    
+  
     @GetMapping
     public ResponseEntity<List<ProdutoResponse>> listar() {
         return ResponseEntity.ok(service.listar());
     }
-    
+  
     @PostMapping
     public ResponseEntity<ProdutoResponse> criar(@Valid @RequestBody ProdutoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(request));
     }
-    
+  
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
@@ -1067,7 +1139,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
-    
+  
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -1334,7 +1406,7 @@ export class FormProdutoComponent implements OnInit {
       preco: this.preco,
       tipoId: this.tipoId
     };
-    
+  
     this.api.criarProduto(novo).subscribe(
       () => {
         this.mensagem = 'Produto criado com sucesso!';
@@ -1638,14 +1710,14 @@ Professor avalia segundo rubrica:
 
 ## Rubrica de Avaliacao (100 pontos)
 
-| Criterio | Pontos | Descricao |
-|----------|--------|-----------|
-| CRUD funcional | 35 | Backend + Frontend completamente funcional |
-| Organizacao em camadas | 20 | Separacao clara Controller/Service/Repository |
-| Validacoes e tratamento | 15 | Validacoes de entrada e erros compreensivos |
-| Padroes de projeto | 15 | Aplicacao correta de MVC, DTO, Service |
-| Documentacao | 15 | README claro, relatorio e explicacao dos padroes |
-| **TOTAL** | **100** | |
+| Criterio                | Pontos        | Descricao                                        |
+| ----------------------- | ------------- | ------------------------------------------------ |
+| CRUD funcional          | 35            | Backend + Frontend completamente funcional       |
+| Organizacao em camadas  | 20            | Separacao clara Controller/Service/Repository    |
+| Validacoes e tratamento | 15            | Validacoes de entrada e erros compreensivos      |
+| Padroes de projeto      | 15            | Aplicacao correta de MVC, DTO, Service           |
+| Documentacao            | 15            | README claro, relatorio e explicacao dos padroes |
+| **TOTAL**         | **100** |                                                  |
 
 ---
 
