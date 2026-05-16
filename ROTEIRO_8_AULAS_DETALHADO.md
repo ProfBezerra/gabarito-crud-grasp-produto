@@ -1116,6 +1116,46 @@ Vantagens de REST:
 - Escalável (stateless).
 - Independente de linguagem/plataforma.
 
+#### O que é Swagger?
+
+Swagger é uma ferramenta para documentar e testar APIs HTTP de forma interativa.
+
+Na prática, o Swagger lê a especificação OpenAPI da aplicação e gera:
+
+- uma documentação visual dos endpoints;
+- exemplos de request/response;
+- um formulário no navegador para enviar requisições diretamente.
+
+Com Swagger, o aluno vê rapidamente:
+
+- os métodos disponíveis (`GET`, `POST`, `DELETE`, etc);
+- os parâmetros esperados;
+- o formato JSON dos DTOs.
+
+#### Como configurar Swagger no Spring Boot
+
+Para adicionar Swagger ao backend Spring Boot, basta incluir a dependência Springdoc OpenAPI no `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>2.2.0</version>
+</dependency>
+```
+
+Depois de compilar e rodar a aplicação, o Swagger UI geralmente estará disponível em:
+
+- `http://localhost:8080/swagger-ui/index.html`
+
+E a documentação OpenAPI em JSON em:
+
+- `http://localhost:8080/v3/api-docs`
+
+Essa configuração funciona sem código extra em muitos casos, porque o Springdoc detecta automaticamente os controllers e os endpoints.
+
+> Nota: Com o Swagger, você pode testar a API diretamente no navegador, sem precisar do Postman. Basta abrir o Swagger UI e enviar requisições `GET`, `POST`, `PUT` ou `DELETE` pelo formulário.
+
 #### Verbos HTTP
 
 GET = obter dados (nao modifica).
@@ -1266,6 +1306,29 @@ Resposta esperada: codigo 201 e tipo criado.
 Checkpoint:
 
 - Todas as operacoes funcionam no Postman.
+
+#### 30-45 min: Testar API com Swagger
+
+1. Certifique-se de que o backend esteja rodando.
+2. Abra o navegador e acesse: `http://localhost:8080/swagger-ui/index.html`
+3. Na interface do Swagger, localize o grupo de endpoints `/tipos`.
+4. Encontre o POST `/tipos` e clique em "Try it out".
+5. No corpo do request, use:
+
+```json
+{
+  "nome": "Eletronico"
+}
+```
+
+6. Clique em "Execute".
+7. Verifique a resposta e o código HTTP 201.
+8. Teste também o GET `/tipos`, POST `/produtos` e DELETE `/produtos/{id}` usando o Swagger.
+
+Checkpoint:
+
+- Todas as operacoes funcionam no Swagger UI.
+- O Swagger mostra modelos de request e response automaticamente.
 
 #### 45-60 min: Configurar CORS para futura integracao com Angular
 
