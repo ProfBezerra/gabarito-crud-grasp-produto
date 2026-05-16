@@ -766,14 +766,79 @@ ProdutoResponse {
 }
 ```
 
-#### Bean Validation
+#### O que são Anotações (Annotations)?
 
-Anotacoes para validar dados:
+Anotacoes = marcadores no código que dizem ao compilador/framework o que fazer com a classe/método/campo.
+
+Sintaxe: começam com `@`.
+
+Exemplos:
+
+```java
+@Entity           // Marca classe como entidade JPA
+@Service          // Marca classe como servico Spring
+@GetMapping       // Marca método para responder GET HTTP
+@Autowired        // Injeta dependência automaticamente
+private ProdutoRepository repo;
+```
+
+Funcionamento:
+
+1. Framework lê a anotação.
+2. Executa lógica associada (ex.: criar tabela, injetar bean, rotear requisição).
+3. Código fica mais limpo (sem configuração manual).
+
+#### Principais Anotações do Spring
+
+**Estrutura (definem componentes):**
+
+- `@Component` = classe é um bean Spring (genérica)
+- `@Service` = bean que executa lógica de negócio
+- `@Repository` = bean que acessa dados
+- `@Controller` = bean que lida com requisições web
+- `@RestController` = @Controller + retorna JSON automaticamente
+
+**Injeção de Dependência:**
+
+- `@Autowired` = injeta bean automaticamente (Spring encontra tipo compatível)
+- `@Qualifier("nomeDoBean")` = especifica qual bean injetar se houver vários
+
+**Mapeamento Web:**
+
+- `@RequestMapping("/caminho")` = define rota base
+- `@GetMapping("/")` = respond GET
+- `@PostMapping("/")` = responde POST
+- `@DeleteMapping("/{id}")` = responde DELETE
+
+**Parâmetros de Requisição:**
+
+- `@PathVariable("id")` = captura {id} da URL
+- `@RequestBody` = deserializa JSON em objeto
+- `@RequestParam("nome")` = captura parâmetro query (ex: ?nome=João)
+
+**JPA (Persistência):**
+
+- `@Entity` = marca classe como tabela no banco
+- `@Id` = marca campo como chave primária
+- `@GeneratedValue` = auto-incremento
+- `@Column` = configura coluna (nullable, length, etc)
+- `@ManyToOne`, `@OneToMany` = relacionamentos
+- `@JoinColumn` = especifica coluna estrangeira
+
+#### Bean Validation (Validações de Dados)
+
+Anotacoes para validar dados em DTOs/entidades:
 
 - @NotNull = nao pode ser null
-- @NotBlank = nao pode estar vazio
-- @Positive = deve ser positivo (numeros)
-- @Max, @Min = limite maximo/minimo
+- @NotBlank = nao pode estar vazio (String)
+- @NotEmpty = nao pode estar vazio (coleção/String)
+- @Positive = deve ser > 0
+- @Negative = deve ser < 0
+- @Max(100) = máximo 100
+- @Min(0) = mínimo 0
+- @Size(min=3, max=50) = tamanho da String/coleção
+- @Email = valida formato de email
+- @Pattern(regexp="...") = valida por expressão regular
 
 ### Parte 2: Implementar Service e DTO (60 min)
 
