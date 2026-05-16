@@ -1453,34 +1453,119 @@ Componentes = blocos reutilizaveis.
 
 Services = classes que compartilham dados/logica.
 
+#### Conceitos fundamentais
+
+**Módulos:** Organizam aplicação em blocos. O `AppModule` é o raiz; agrupa componentes, services, pipes. Cada módulo é uma classe marcada com `@NgModule`.
+
+**Dependency Injection (DI):** Padrão onde o framework injeta dependências (services) nos componentes. Reduz acoplamento. Ex: `constructor(private api: ProdutoApiService) { }`.
+
+**Decoradores:** Anotações que adicionam metadados. `@Component` marca uma classe como componente; `@Injectable` marca um serviço; `@NgModule` marca um módulo.
+
+**Observables (RxJS):** Fluxo assíncrono de dados. HTTP requests retornam Observables; `.subscribe()` reage a novos dados. Ex: `this.api.getProdutos().subscribe(dados => this.produtos = dados)`.
+
+**Ciclo de vida:** Componentes têm fases (criação, renderização, destruição).
+  - `ngOnInit`: chamado uma vez, após o componente ser criado.
+  - `ngOnDestroy`: chamado antes de destruir o componente (limpeza).
+  - Outros: `ngAfterViewInit`, `ngAfterContentInit`, `ngOnChanges`.
+
 #### Estrutura basica Angular
 
 ```
 app/
-  app.module.ts = registra componentes
-  app.component.ts = componente raiz
-  app.component.html = template (HTML)
+  app.module.ts = registra componentes, services, imports
+  app.component.ts = componente raiz (TypeScript)
+  app.component.html = template (HTML/Angular)
   app.component.css = estilos
+  services/
+    produto-api.service.ts = serviço que chama API
+  components/
+    lista-produtos/
+      lista-produtos.component.ts
+      lista-produtos.component.html
+      lista-produtos.component.css
 ```
 
-#### Binding de dados
+#### Template syntax (HTML com Angular)
 
-One-way: exibir valor
+**Interpolação:** exibir variáveis
 
 ```html
 <p>{{ nome }}</p>
 ```
 
-Two-way: capturar entrada
+**Event binding:** capturar clique
+
+```html
+<button (click)="salvar()">Salvar</button>
+```
+
+**Property binding:** passar valor a propriedade
+
+```html
+<input [value]="nome">
+```
+
+**Two-way binding:** capturar entrada (requer `FormsModule`)
 
 ```html
 <input [(ngModel)]="nome">
 ```
 
-Event binding: capturar clique
+**Diretivas:**
 
 ```html
-<button (click)="salvar()">Salvar</button>
+<div *ngIf="mostraErro">Erro ao carregar</div>
+<ul>
+  <li *ngFor="let produto of produtos">{{ produto.nome }}</li>
+</ul>
+```
+
+**Template reference (template local):**
+
+```html
+<input #campoNome>
+<button (click)="usar(campoNome.value)">Usar valor</button>
+```
+
+#### Estrutura de um componente TypeScript
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-lista-produtos',    // nome da tag HTML
+  templateUrl: './lista-produtos.component.html',
+  styleUrls: ['./lista-produtos.component.css']
+})
+export class ListaProdutosComponent implements OnInit {
+  
+  // Propriedades
+  produtos: any[] = [];
+  carregando: boolean = false;
+  
+  // Injetar serviço
+  constructor(private api: ProdutoApiService) { }
+  
+  // Ciclo de vida
+  ngOnInit(): void {
+    this.carregar();
+  }
+  
+  // Métodos
+  carregar() {
+    this.carregando = true;
+    this.api.getProdutos().subscribe(
+      dados => {
+        this.produtos = dados;
+        this.carregando = false;
+      },
+      erro => {
+        console.error('Erro', erro);
+        this.carregando = false;
+      }
+    );
+  }
+}
 ```
 
 ### Parte 2: Criar projeto Angular (60 min)
@@ -1489,30 +1574,42 @@ Event binding: capturar clique
 
 No PowerShell, na pasta frontend:
 
-```
+```powershell
 cd frontend
 ng new produtos-web --routing --style=css
 cd produtos-web
 ng serve
 ```
 
-Acessar: http://localhost:4200
+Flags explicadas:
+- `--routing`: cria `AppRoutingModule` para navegação entre páginas.
+- `--style=css`: usa CSS simples (sem SCSS/LESS).
+
+Acessar: `http://localhost:4200`
+
+Passos internos que o Angular CLI faz:
+1. Cria pasta `produtos-web/` com estrutura básica.
+2. Cria `src/` com componentes, services, módulos.
+3. Cria `package.json` com dependências (Angular, TypeScript, RxJS).
+4. Instala dependências automaticamente (`npm install`).
+5. `ng serve` compila e roda servidor de desenvolvimento na porta 4200.
 
 Checkpoint:
 
 - App Angular abre sem erro.
+- Mensagem "Welcome to produtos-web!" aparece.
 
 #### 15-30 min: Criar servico de API
 
-No PowerShell:
+No PowerShell (na pasta `produtos-web`):
 
-```
+```powershell
 ng generate service services/produto-api
 ```
 
-Arquivo gerado: src/app/services/produto-api.service.ts
+Comando gera: `src/app/services/produto-api.service.ts` e `src/app/services/produto-api.service.spec.ts` (testes).
 
-Editar:
+Editar `src/app/services/produto-api.service.ts`:
 
 ```typescript
 import { Injectable } from '@angular/core';
@@ -1520,41 +1617,54 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root'  // Torna serviço singleton (uma instância global)
 })
 export class ProdutoApiService {
   
-  private apiUrl = 'http://localhost:8080';
+  private apiUrl = 'http://localhost:8080';  // URL do backend Spring Boot
   
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }  // Injeta HttpClient do Angular
   
+  // GET: recupera todos os produtos
+  // Observable: fluxo assíncrono de dados
   getProdutos(): Observable<any> {
     return this.http.get(`${this.apiUrl}/produtos`);
   }
   
+  // POST: cria um novo produto
   criarProduto(produto: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/produtos`, produto);
   }
   
+  // DELETE: remove um produto
   deletarProduto(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/produtos/${id}`);
   }
   
+  // GET: recupera todos os tipos
   getTipos(): Observable<any> {
     return this.http.get(`${this.apiUrl}/tipos`);
   }
 }
 ```
 
-#### 30-45 min: Importar HttpClientModule
+Explicações importantes:
 
-Editar: src/app/app.module.ts
+- `@Injectable({ providedIn: 'root' })`: torna o serviço injetável globalmente; o Angular cria uma única instância (singleton).
+- `private http: HttpClient`: injeção de dependência; Angular passa `HttpClient` automaticamente.
+- Cada método retorna `Observable<any>`: a resposta HTTP é um fluxo assíncrono que pode ser processado com `.subscribe()`.
+- `Observable` não executa até ser inscrito (lazy evaluation).
+
+#### 30-45 min: Importar HttpClientModule e FormsModule
+
+Editar: `src/app/app.module.ts`
 
 ```typescript
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
 
@@ -1563,73 +1673,129 @@ import { AppComponent } from './app.component';
     AppComponent
   ],
   imports: [
-    BrowserModule,
-    HttpClientModule,
-    FormsModule
+    BrowserModule,         // Permite usar diretivas Angular (ngIf, ngFor, etc)
+    HttpClientModule,      // Habilita requisições HTTP (GET, POST, DELETE)
+    FormsModule,           // Habilita two-way binding [(ngModel)] em forms
+    AppRoutingModule       // Habilita navegação entre rotas
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [],           // Lista de serviços globais (services)
+  bootstrap: [AppComponent] // Componente raiz a iniciar
 })
 export class AppModule { }
 ```
 
+Explicações:
+
+- `declarations`: lista componentes que pertencem a este módulo.
+- `imports`: importa outros módulos (esticam funcionalidades do Angular ao seu app).
+- `providers`: lista serviços singleton criados uma vez.
+- `bootstrap`: qual componente renderizar primeiro (AppComponent).
+
+Sem esses módulos, diretivas, two-way binding e HTTP não funcionariam.
+
 #### 45-60 min: Criar componentes
 
-```
+No PowerShell (na pasta `produtos-web`):
+
+```powershell
 ng generate component components/lista-produtos
 ng generate component components/form-produto
 ```
 
-#### 60-75 min: Testar servico simples
+O comando `ng generate component` cria:
+- `.ts` (TypeScript com lógica);
+- `.html` (template);
+- `.css` (estilos);
+- `.spec.ts` (testes automatizados).
 
-Em lista-produtos.component.ts:
+E registra automaticamente os componentes no `app.module.ts` nas `declarations`.
+
+#### 60-75 min: Testar serviço simples
+
+Editar `src/app/components/lista-produtos/lista-produtos.component.ts`:
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
 import { ProdutoApiService } from '../../services/produto-api.service';
 
 @Component({
-  selector: 'app-lista-produtos',
+  selector: 'app-lista-produtos',   // Usável como <app-lista-produtos></app-lista-produtos>
   templateUrl: './lista-produtos.component.html',
   styleUrls: ['./lista-produtos.component.css']
 })
 export class ListaProdutosComponent implements OnInit {
   
+  // Propriedades observáveis no template
   produtos: any[] = [];
+  carregando: boolean = false;
   
+  // Injeta o serviço de API
   constructor(private api: ProdutoApiService) { }
   
+  // Chamado automaticamente após o componente ser criado
   ngOnInit(): void {
     this.carregarProdutos();
   }
   
+  // Busca produtos do backend
   carregarProdutos() {
+    this.carregando = true;
     this.api.getProdutos().subscribe(
-      dados => this.produtos = dados,
-      erro => console.error('Erro ao carregar', erro)
+      dados => {
+        this.produtos = dados;
+        this.carregando = false;
+      },
+      erro => {
+        console.error('Erro ao carregar', erro);
+        this.carregando = false;
+      }
     );
   }
 }
 ```
 
-Em lista-produtos.component.html:
+Editar `src/app/components/lista-produtos/lista-produtos.component.html`:
 
 ```html
 <h2>Produtos</h2>
-<ul>
+
+<!-- Mostra mensagem enquanto carrega -->
+<p *ngIf="carregando">Carregando...</p>
+
+<!-- Mostra lista quando dados chegam -->
+<ul *ngIf="!carregando && produtos.length > 0">
   <li *ngFor="let produto of produtos">
-    {{ produto.nome }} - R$ {{ produto.preco }}
+    <strong>{{ produto.nome }}</strong> - R$ {{ produto.preco }}
+    <br>
+    <small>Tipo: {{ produto.tipo?.nome }}</small>
+    <button (click)="deletar(produto.id)">Deletar</button>
   </li>
 </ul>
+
+<!-- Mostra mensagem se nenhum produto -->
+<p *ngIf="!carregando && produtos.length === 0">
+  Nenhum produto encontrado.
+</p>
 ```
+
+Sintaxe usada:
+- `*ngIf="carregando"`: renderiza apenas se a expressão for true.
+- `*ngFor="let produto of produtos"`: repete elemento para cada item da lista.
+- `{{ produto.nome }}`: interpolação (exibe valor da propriedade).
+- `{{ produto.tipo?.nome }}`: safe navigation operator (evita erro se `tipo` for null).
+- `(click)="deletar(produto.id)"`: event binding (chama método ao clicar).
 
 #### 75-90 min: Verificacao
 
 Backend rodando na porta 8080.
 Frontend rodando na porta 4200.
-Lista aparece na tela.
+Lista de produtos aparece na tela.
 
 Checkpoint:
+
+- Angular consome dados do backend via serviço.
+- Componente exibe lista dinamicamente.
+- Fluxo completo: backend API → serviço Angular → componente → template.
 
 - Angular consome dados do backend.
 
