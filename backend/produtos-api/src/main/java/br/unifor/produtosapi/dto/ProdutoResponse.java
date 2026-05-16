@@ -1,0 +1,33 @@
+package br.unifor.produtosapi.dto;
+
+public class ProdutoResponse {
+  
+    private Long id;
+    private String nome;
+    private Double preco;
+    private String tipoNome;
+  
+    public ProdutoResponse(Long id, String nome, Double preco, String tipoNome) {
+        this.id = id;
+        this.nome = nome;
+        this.preco = preco;
+        this.tipoNome = tipoNome;
+    }
+  
+    // Getters
+    public Long getId() {
+        return id;
+    }
+  
+    public String getNome() {
+        return nome;
+    }
+  
+    public Double getPreco() {
+        return preco;
+    }
+  
+    public String getTipoNome() {
+        return tipoNome;
+    }
+}
