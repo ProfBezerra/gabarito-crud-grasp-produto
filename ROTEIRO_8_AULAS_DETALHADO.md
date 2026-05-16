@@ -723,6 +723,29 @@ Exemplo regra de negocio:
 
 Essas regras ficam em Service, nao em Controller.
 
+#### O que é DTO?
+
+DTO (Data Transfer Object) = objeto simples usado para transportar dados entre camadas ou pela rede (requisicao/resposta).
+
+Caracteristicas:
+
+- Contém apenas campos (propriedades) e getters/setters.
+- Sem lógica de negócio, sem anotações de banco de dados.
+- Usado para serialização/desserialização JSON.
+- Desacopla a entidade interna da API.
+
+Por que usar?
+
+- Entidade JPA tem anotações de persistência que o cliente não precisa conhecer.
+- DTO oferece um contrato claro entre client e servidor.
+- Mudanças no banco não expõem o modelo interno da API.
+- Validações podem ser específicas para entrada/saída.
+
+Dois tipos comuns:
+
+1. **Request DTO:** dados que o cliente envia (ex.: `ProdutoRequest`)
+2. **Response DTO:** dados que a API retorna (ex.: `ProdutoResponse`)
+
 #### O papel do DTO
 
 Entidade Produto vem do banco com dados internos (@Entity, @JoinColumn).
