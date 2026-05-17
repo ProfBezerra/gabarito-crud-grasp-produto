@@ -60,7 +60,9 @@ Exemplo:
 
 #### O que e Angular?
 
-Framework JavaScript para fazer interfaces web.
+Framework TypeScript para criar interfaces web.
+
+> **Neste projeto usamos Angular 21.2** — a versao mais moderna do framework no momento da disciplina.
 
 Alternativas: React, Vue (mas aqui usamos Angular).
 
@@ -69,6 +71,7 @@ Por que Angular?
 - Digitado (TypeScript, menos erros).
 - Padronizado (bom para ensino).
 - Ferramenta CLI poderosa.
+- Angular 21 gera componentes standalone por padrao: sem NgModule, estrutura mais simples.
 
 #### O que e Maven?
 
@@ -1447,6 +1450,20 @@ git commit -m "aula5: controllers rest e endpoints completos"
 
 Framework TypeScript para criar interfaces web.
 
+> **Este projeto usa Angular 21.2** (`@angular/core: ^21.2.0`).
+> Angular 21 e a versao atual do framework e traz mudancas importantes em relacao a versoes anteriores (13 ou menos):
+>
+> | Caracteristica | Ate Angular 14 | Angular 15+ / 21 |
+> |---|---|---|
+> | Componentes | Necessitavam `NgModule` | **Standalone** por padrao (`standalone: true`) |
+> | Bootstrap | `platformBrowserDynamic().bootstrapModule(AppModule)` | **`bootstrapApplication(App, appConfig)`** |
+> | HTTP | `HttpClientModule` no imports do modulo | **`provideHttpClient()`** no `app.config.ts` |
+> | Reatividade | Apenas RxJS/Observables | Tambem **Signals** (`signal()`, `computed()`, `effect()`) |
+> | Control flow | `*ngIf`, `*ngFor` com `CommonModule` | Novo: **`@if`**, **`@for`** nativos no template |
+> | Nomes de arquivo | `lista-produtos.component.ts` | **`lista-produtos.ts`** (sufixo `.component` removido) |
+> | Build | `@angular-devkit/build-angular` | **`@angular/build`** (mais rapido, baseado em esbuild) |
+> | Testes | Karma + Jasmine | **Vitest** (mais moderno, compativel com Node) |
+
 TypeScript = JavaScript com tipagem (menos erros).
 
 Componentes = blocos reutilizaveis.
@@ -1522,6 +1539,38 @@ adicionarProduto(p: Produto): void {
 #### Conceitos fundamentais
 
 **Módulos:** Organizam aplicação em blocos. Neste projeto Angular 21+ usamos componentes standalone em vez de um `AppModule` tradicional. A aplicação raiz é `app.ts` e o bootstrap é feito por `main.ts`.
+
+> **Angular 21 — Standalone por padrao:** Todo componente gerado pelo CLI ja vem com `standalone: true`. Nao existe mais `app.module.ts`. Os providers globais (HttpClient, Router, FormsModule) sao configurados em `app.config.ts` e passados para `bootstrapApplication()` em `main.ts`.
+>
+> ```typescript
+> // main.ts — Angular 21
+> import { bootstrapApplication } from '@angular/platform-browser';
+> import { appConfig } from './app/app.config';
+> import { App } from './app/app';
+>
+> bootstrapApplication(App, appConfig);
+> ```
+
+**Signals (Angular 16+, padrao em Angular 21):** nova forma de reatividade primitiva. Diferente de variavel comum, um signal notifica o Angular automaticamente quando seu valor muda — sem precisar de RxJS.
+
+```typescript
+import { signal, computed } from '@angular/core';
+
+// signal = valor reativo
+titulo = signal('Produtos');
+
+// computed = derivado automatico de outro signal
+tituloMaiusculo = computed(() => this.titulo().toUpperCase());
+
+// Ler: chame como funcao
+console.log(this.titulo());         // 'Produtos'
+
+// Escrever
+this.titulo.set('Novo Titulo');
+this.titulo.update(v => v + '!');
+```
+
+> O componente `App` ja usa signal: `protected readonly title = signal('produtos-web');`
 
 **Dependency Injection (DI):** Padrão onde o framework injeta dependências (services) nos componentes. Reduz acoplamento. Ex: `constructor(private api: ProdutoApiService) { }`.
 
@@ -1606,6 +1655,23 @@ app/
   <li *ngFor="let produto of produtos">{{ produto.nome }}</li>
 </ul>
 ```
+
+> **Angular 17+ — Novo control flow nativo (alternativa moderna):**
+> A partir do Angular 17 existe uma sintaxe mais limpa, sem precisar importar `CommonModule`:
+>
+> ```html
+> @if (mostraErro) {
+>   <div>Erro ao carregar</div>
+> }
+>
+> <ul>
+>   @for (produto of produtos; track produto.id) {
+>     <li>{{ produto.nome }}</li>
+>   }
+> </ul>
+> ```
+>
+> Neste projeto usamos a sintaxe classica (`*ngIf`, `*ngFor`) com `CommonModule` para que o codigo seja mais facil de reconhecer para iniciantes e compativel com qualquer versao do Angular.
 
 **Template reference (template local):**
 
