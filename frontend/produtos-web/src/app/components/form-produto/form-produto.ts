@@ -1,11 +1,9 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-form-produto',
-  standalone: true,
-  imports: [FormsModule],
+  imports: [],
   templateUrl: './form-produto.html',
-  styleUrls: ['./form-produto.css'],
+  styleUrl: './form-produto.css',
 })
 export class FormProduto {}

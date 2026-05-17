@@ -1,21 +1,17 @@
 <h2>Produtos</h2>
-
-<!-- Mostra mensagem enquanto carrega -->
-<p *ngIf="carregando">Carregando...</p>
-
-<div *ngIf="!carregando">
-  <p *ngIf="produtos.length > 0">Produtos encontrados: {{ produtos.length }}</p>
-
-  <ul *ngIf="produtos.length > 0">
-    <li *ngFor="let produto of produtos">
-      <strong>{{ produto?.nome }}</strong> - R$ {{ produto?.preco }}
-      <br>
-      <small>Tipo: {{ produto?.tipo?.nome }}</small>
-      <button (click)="deletar(produto?.id)">Deletar</button>
-    </li>
-  </ul>
-
-  <p *ngIf="produtos.length === 0">
-    Nenhum produto encontrado.
-  </p>
-</div>
+<table border="1">
+  <tr>
+    <th>Nome </th>
+    <th>Preco</th>
+    <th>Tipo</th>
+    <th>Acao</th>
+  </tr>
+  <tr *ngFor="let produto of produtos">
+    <td>{{ produto.nome }}</td>
+    <td>R$ {{ produto.preco }}</td>
+    <td>{{ produto.tipoNome }}</td>
+    <td>
+      <button (click)="deletar(produto.id)">Deletar</button>
+    </td>
+  </tr>
+</table>

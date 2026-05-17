@@ -1988,7 +1988,7 @@ Editar `src/app/components/lista-produtos/lista-produtos.html`:
     <th>Tipo</th>
     <th>Acao</th>
   </tr>
-  <tr *ngFor="let produto de produtos">
+  <tr *ngFor="let produto of produtos">
     <td>{{ produto.nome }}</td>
     <td>R$ {{ produto.preco }}</td>
     <td>{{ produto.tipoNome }}</td>
@@ -1998,6 +1998,9 @@ Editar `src/app/components/lista-produtos/lista-produtos.html`:
   </tr>
 </table>
 ```
+
+> **Atencao:** a palavra-chave dentro de `*ngFor` e sempre `of` (ingles), nunca `de` (portugues).
+> Escrever `de` e um erro silencioso — o Angular nao exibe a lista e nao mostra mensagem de erro.
 
 Sintaxe usada:
 
@@ -2009,7 +2012,45 @@ Sintaxe usada:
 - `(click)="deletar(produto.id)"`: event binding que chama `deletar()` ao clicar.
 - `deletar()`: chama a API, e ao concluir recarrega a lista automaticamente.
 
-#### 75-90 min: Verificacao
+#### 75-85 min: Configurar rota e template raiz
+
+O projeto Angular foi criado com suporte a roteamento (`--routing`), mas as rotas ainda estao vazias e o `app.html` ainda tem o conteudo padrao gerado pelo CLI.
+Sem essas duas configuracoes, o componente nunca aparece na tela.
+
+**Passo 1 — Registrar a rota em `src/app/app.routes.ts`:**
+
+```typescript
+import { Routes } from '@angular/router';
+import { ListaProdutosComponent } from './components/lista-produtos/lista-produtos';
+
+export const routes: Routes = [
+  { path: '', component: ListaProdutosComponent },
+  { path: '**', redirectTo: '' }
+];
+```
+
+Explicacao:
+
+- `path: ''` = rota padrao (URL raiz `http://localhost:4200/`).
+- `component: ListaProdutosComponent` = qual componente renderizar nessa rota.
+- `path: '**'` = qualquer URL desconhecida redireciona para a raiz.
+
+**Passo 2 — Substituir `src/app/app.html` pelo `<router-outlet>`:**
+
+O arquivo `app.html` gerado pelo CLI tem mais de 300 linhas com a pagina de boas-vindas do Angular.
+Apague todo o conteudo e deixe apenas:
+
+```html
+<router-outlet />
+```
+
+`<router-outlet>` e o elemento onde o Angular injeta o componente da rota ativa.
+Sem ele, mesmo com a rota configurada, nada aparece.
+
+> **Por que nao usar `<app-lista-produtos>` diretamente no `app.html`?**
+> Seria possivel, mas usar roteamento e a pratica recomendada. Na Aula 7 adicionaremos o formulario de cadastro e o roteamento facilitara a navegacao entre telas.
+
+#### 85-90 min: Verificacao
 
 Backend rodando na porta 8080.
 Frontend rodando na porta 4200.
@@ -2017,6 +2058,8 @@ Lista de produtos aparece na tela em formato de tabela, e o botão Deletar remov
 
 Checkpoint:
 
+- `app.routes.ts` tem rota para `ListaProdutosComponent`.
+- `app.html` contem apenas `<router-outlet />`.
 - Angular consome dados do backend via serviço.
 - Componente exibe lista de produtos em tabela.
 - Botão Deletar funciona: remove o produto e atualiza a lista automaticamente.
