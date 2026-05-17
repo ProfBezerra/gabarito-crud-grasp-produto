@@ -1,20 +1,25 @@
-<h2>Produtos</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Produtos</h2>
+  <a routerLink="/produtos/novo" class="btn btn-primary">+ Cadastrar novo produto</a>
+</div>
 
-<p><a routerLink="/produtos/novo">+ Cadastrar novo produto</a></p>
-
-<table border="1">
-  <tr>
-    <th>Nome</th>
-    <th>Preco</th>
-    <th>Tipo</th>
-    <th>Acao</th>
-  </tr>
-  <tr *ngFor="let produto of produtos">
-    <td>{{ produto.nome }}</td>
-    <td>R$ {{ produto.preco }}</td>
-    <td>{{ produto.tipoNome }}</td>
-    <td>
-      <button (click)="deletar(produto.id)">Deletar</button>
-    </td>
-  </tr>
+<table class="table table-striped table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th>Nome</th>
+      <th>Preço</th>
+      <th>Tipo</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let produto of produtos">
+      <td>{{ produto.nome }}</td>
+      <td>R$ {{ produto.preco }}</td>
+      <td>{{ produto.tipoNome }}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" (click)="deletar(produto.id)">Deletar</button>
+      </td>
+    </tr>
+  </tbody>
 </table>

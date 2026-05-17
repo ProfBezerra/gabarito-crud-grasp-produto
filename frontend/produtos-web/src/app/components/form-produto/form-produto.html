@@ -1,18 +1,19 @@
-<h2>Cadastro de Produto</h2>
-<form (ngSubmit)="salvar()">
-  <div>
-    <label>Nome:</label>
-    <input type="text" [(ngModel)]="nome" name="nome" required>
+<h2 class="mb-3">Cadastro de Produto</h2>
+
+<form (ngSubmit)="salvar()" class="col-lg-6">
+  <div class="mb-3">
+    <label class="form-label">Nome:</label>
+    <input type="text" [(ngModel)]="nome" name="nome" required class="form-control">
   </div>
 
-  <div>
-    <label>Preco:</label>
-    <input type="number" [(ngModel)]="preco" name="preco" required>
+  <div class="mb-3">
+    <label class="form-label">Preço:</label>
+    <input type="number" [(ngModel)]="preco" name="preco" required class="form-control">
   </div>
 
-  <div>
-    <label>Tipo:</label>
-    <select [(ngModel)]="tipoId" name="tipoId" required>
+  <div class="mb-3">
+    <label class="form-label">Tipo:</label>
+    <select [(ngModel)]="tipoId" name="tipoId" required class="form-select">
       <option value="">Selecione...</option>
       <option *ngFor="let tipo of tipos" [value]="tipo.id">
         {{ tipo.nome }}
@@ -20,8 +21,10 @@
     </select>
   </div>
 
-  <button type="submit">Cadastrar</button>
-  <a routerLink="/produtos"> Cancelar</a>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success">Cadastrar</button>
+    <a routerLink="/produtos" class="btn btn-secondary">Cancelar</a>
+  </div>
 </form>
 
-<p *ngIf="mensagem">{{ mensagem }}</p>
+<div *ngIf="mensagem" class="alert alert-danger mt-3">{{ mensagem }}</div>

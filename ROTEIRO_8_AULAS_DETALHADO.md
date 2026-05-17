@@ -2401,6 +2401,233 @@ Checkpoint:
 
 ---
 
+### Parte 3 (20 min) - Layout responsivo com Bootstrap
+
+#### O que e Bootstrap?
+
+**Bootstrap** e uma biblioteca CSS gratuita criada pelo Twitter que fornece componentes visuais prontos para uso: botoes estilizados, tabelas, formularios, menus de navegacao, grades responsivas etc.
+
+Com Bootstrap, voce nao precisa escrever CSS manualmente. Basta adicionar **classes CSS** nos elementos HTML e eles ja ganham aparencia profissional e se adaptam automaticamente a diferentes tamanhos de tela (celular, tablet, desktop).
+
+**Por que usar Bootstrap?**
+
+- Resultado visual profissional sem escrever CSS
+- Layout responsivo (funciona em celular e desktop)
+- Componentes padronizados: botoes, tabelas, alertas, formularios
+- Amplamente usado no mercado
+
+#### Passo 1: Adicionar Bootstrap via CDN
+
+Nao e necessario instalar nenhum pacote. Basta adicionar uma linha no `<head>` do arquivo `index.html`.
+
+**CDN** (Content Delivery Network) e uma URL publica onde o Bootstrap ja esta hospedado — o browser baixa o CSS diretamente de la.
+
+Editar `src/index.html`:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ProdutosWeb</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+```
+
+> A linha `<meta name="viewport"...>` ja estava la e e essencial para o layout responsivo funcionar corretamente em celulares.
+
+#### Passo 2: Barra de navegacao
+
+Substituir o `<h1>` e `<nav>` simples por uma navbar Bootstrap. Editar `src/app/app.html`:
+
+```html
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container">
+    <span class="navbar-brand fw-bold">Sistema de Produtos</span>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/produtos">Produtos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/tipos">Tipos de Produto</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <router-outlet />
+</div>
+```
+
+Classes usadas:
+
+| Classe | O que faz |
+|---|---|
+| `navbar navbar-expand-lg` | Cria a barra de navegacao responsiva |
+| `navbar-dark bg-primary` | Fundo azul com texto branco |
+| `mb-4` | Margem inferior de 4 unidades (espaco abaixo da navbar) |
+| `container` | Centraliza o conteudo com largura maxima |
+| `navbar-brand fw-bold` | Nome do sistema em destaque e negrito |
+| `navbar-nav` / `nav-item` / `nav-link` | Estrutura padrao dos links da navbar |
+
+#### Passo 3: Lista de produtos
+
+Editar `src/app/components/lista-produtos/lista-produtos.html`:
+
+```html
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Produtos</h2>
+  <a routerLink="/produtos/novo" class="btn btn-primary">+ Cadastrar novo produto</a>
+</div>
+
+<table class="table table-striped table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th>Nome</th>
+      <th>Preco</th>
+      <th>Tipo</th>
+      <th>Acao</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let produto of produtos">
+      <td>{{ produto.nome }}</td>
+      <td>R$ {{ produto.preco }}</td>
+      <td>{{ produto.tipoNome }}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" (click)="deletar(produto.id)">Deletar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+```
+
+Classes usadas:
+
+| Classe | O que faz |
+|---|---|
+| `d-flex justify-content-between align-items-center` | Coloca titulo e botao lado a lado, alinhados |
+| `mb-3` | Margem inferior |
+| `btn btn-primary` | Botao azul padrao Bootstrap |
+| `table table-striped table-bordered` | Tabela com listras alternadas e bordas |
+| `table-dark` | Cabecalho escuro |
+| `btn btn-danger btn-sm` | Botao vermelho pequeno |
+
+#### Passo 4: Lista de tipos
+
+Editar `src/app/components/lista-tipos/lista-tipos.html`:
+
+```html
+<h2 class="mb-3">Tipos de Produto</h2>
+
+<form (ngSubmit)="cadastrar()" class="row g-2 mb-4">
+  <div class="col-auto">
+    <input type="text" [(ngModel)]="novoNome" name="novoNome"
+           placeholder="Ex: Eletronico" class="form-control">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </div>
+</form>
+
+<div *ngIf="mensagem" class="alert alert-info">{{ mensagem }}</div>
+
+<table class="table table-striped table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th>
+      <th>Nome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let tipo of tipos">
+      <td>{{ tipo.id }}</td>
+      <td>{{ tipo.nome }}</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+Classes usadas:
+
+| Classe | O que faz |
+|---|---|
+| `row g-2` | Linha de grade com espacamento entre colunas |
+| `col-auto` | Coluna que ocupa apenas o espaco necessario |
+| `form-control` | Estilo Bootstrap para campos de texto |
+| `alert alert-info` | Caixa de mensagem azul claro |
+
+#### Passo 5: Formulario de cadastro de produto
+
+Editar `src/app/components/form-produto/form-produto.html`:
+
+```html
+<h2 class="mb-3">Cadastro de Produto</h2>
+
+<form (ngSubmit)="salvar()" class="col-lg-6">
+  <div class="mb-3">
+    <label class="form-label">Nome:</label>
+    <input type="text" [(ngModel)]="nome" name="nome" required class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Preco:</label>
+    <input type="number" [(ngModel)]="preco" name="preco" required class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Tipo:</label>
+    <select [(ngModel)]="tipoId" name="tipoId" required class="form-select">
+      <option value="">Selecione...</option>
+      <option *ngFor="let tipo of tipos" [value]="tipo.id">
+        {{ tipo.nome }}
+      </option>
+    </select>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success">Cadastrar</button>
+    <a routerLink="/produtos" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+
+<div *ngIf="mensagem" class="alert alert-danger mt-3">{{ mensagem }}</div>
+```
+
+Classes usadas:
+
+| Classe | O que faz |
+|---|---|
+| `col-lg-6` | Limita a largura do formulario a metade da tela em telas grandes |
+| `mb-3` | Margem inferior entre os campos |
+| `form-label` | Estilo padrao Bootstrap para labels |
+| `form-control` | Estilo para inputs de texto e numero |
+| `form-select` | Estilo Bootstrap para `<select>` |
+| `d-flex gap-2` | Coloca botoes lado a lado com espaco entre eles |
+| `btn btn-success` | Botao verde |
+| `btn btn-secondary` | Botao cinza |
+| `alert alert-danger mt-3` | Caixa de erro vermelha com margem superior |
+
+#### Checkpoint
+
+- Acessar `http://localhost:4200` — deve exibir navbar azul no topo.
+- A lista de produtos deve ter tabela com listras e botao vermelho "Deletar".
+- O formulario de cadastro deve ter campos bem alinhados e botoes coloridos.
+- O layout deve se adaptar ao reduzir a janela do browser (responsivo).
+- **Nenhum arquivo TypeScript foi alterado** — Bootstrap atua apenas no HTML/CSS.
+
+---
+
 ## Aula 8 (90 min) - Revisao, Padroes e Entrega Final
 
 ### Parte 1: Repassar arquitetura (30 min)
