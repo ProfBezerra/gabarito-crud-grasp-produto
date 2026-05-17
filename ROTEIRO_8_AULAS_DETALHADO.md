@@ -1874,7 +1874,8 @@ Editar: `src/app/app.config.ts`
 import {
   ApplicationConfig,
   importProvidersFrom,
-  provideBrowserGlobalErrorListeners
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -1886,6 +1887,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(),
     importProvidersFrom(FormsModule)
@@ -1899,6 +1901,7 @@ Explicações:
 - `importProvidersFrom(FormsModule)`: habilita `NgModel` e formulários template-driven.
 - `provideRouter(routes)`: habilita rotas.
 - `provideBrowserGlobalErrorListeners()`: captura erros globais no browser.
+- `provideZonelessChangeDetection()`: **obrigatório em Angular 21**. Projetos Angular 21 não incluem `zone.js` por padrão. Sem este provider, a tela não re-renderiza após operações HTTP (cadastrar, deletar, listar). Ele ativa o mecanismo nativo de detecção de mudanças do Angular 21.
 
 Sem esses providers, o serviço e o formulário não funcionariam corretamente.
 
@@ -1926,7 +1929,7 @@ E registra automaticamente os componentes no Angular, sem precisar de um `AppMod
 Editar `src/app/components/lista-produtos/lista-produtos.ts`:
 
 ```typescript
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProdutoApiService } from '../../services/produto-api';
 
@@ -1941,7 +1944,7 @@ export class ListaProdutosComponent implements OnInit {
   produtos: any[] = [];
   carregando = false;
 
-  constructor(private api: ProdutoApiService) { }
+  constructor(private api: ProdutoApiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.carregarProdutos();
@@ -1966,10 +1969,12 @@ export class ListaProdutosComponent implements OnInit {
         }));
 
         this.carregando = false;
+        this.cdr.detectChanges();  // força re-render após atualizar dados
       },
       erro => {
         console.error('Erro ao carregar', erro);
         this.carregando = false;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -2017,6 +2022,7 @@ Sintaxe usada:
 - `{{ produto.tipoNome }}`: exibe o nome do tipo recebido diretamente do backend.
 - `(click)="deletar(produto.id)"`: event binding que chama `deletar()` ao clicar.
 - `deletar()`: chama a API, e ao concluir recarrega a lista automaticamente.
+- `ChangeDetectorRef` / `cdr.detectChanges()`: **necessário em Angular 21 zoneless**. Após cada callback HTTP, o Angular não re-renderiza a tela automaticamente. Chamar `detectChanges()` força a atualização do template. Sem isso, os dados são carregados mas a tela não muda.
 
 #### 75-85 min: Configurar rota e template raiz
 
@@ -2081,7 +2087,8 @@ Checkpoint:
 Em `src/app/components/form-produto/form-produto.ts`:
 
 ```typescript
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ProdutoApiService } from '../../services/produto-api';
@@ -2089,7 +2096,7 @@ import { ProdutoApiService } from '../../services/produto-api';
 @Component({
   selector: 'app-form-produto',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './form-produto.html',
   styleUrls: ['./form-produto.css']
 })
@@ -2100,7 +2107,7 @@ export class FormProdutoComponent implements OnInit {
   tipos: any[] = [];
   mensagem = '';
 
-  constructor(private api: ProdutoApiService, private router: Router) { }
+  constructor(private api: ProdutoApiService, private router: Router, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.carregarTipos();
@@ -2108,7 +2115,7 @@ export class FormProdutoComponent implements OnInit {
 
   carregarTipos() {
     this.api.getTipos().subscribe(
-      dados => this.tipos = dados,
+      dados => { this.tipos = dados; this.cdr.detectChanges(); },
       erro => console.error('Erro ao carregar tipos', erro)
     );
   }
@@ -2126,17 +2133,19 @@ export class FormProdutoComponent implements OnInit {
       },
       erro => {
         this.mensagem = 'Erro ao criar produto: ' + erro.message;
+        this.cdr.detectChanges();
       }
     );
   }
 }
 ```
 
-Explicacoes adicionadas:
+Explicacoes:
 
 - `Router`: servico do Angular para navegar entre rotas programaticamente.
 - `RouterLink`: diretiva para criar links de navegacao no template.
 - `this.router.navigate(['/produtos'])`: redireciona para a lista de produtos apos salvar com sucesso.
+- `ChangeDetectorRef` / `cdr.detectChanges()`: força o Angular a atualizar o template apos callbacks HTTP (necessario em Angular 21 zoneless).
 
 Em `src/app/components/form-produto/form-produto.html`:
 
@@ -2181,7 +2190,7 @@ Isso evita criar dois componentes separados e mantem a experiencia simples para 
 Editar `src/app/components/lista-tipos/lista-tipos.ts`:
 
 ```typescript
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProdutoApiService } from '../../services/produto-api';
@@ -2199,7 +2208,7 @@ export class ListaTiposComponent implements OnInit {
   mensagem = '';
   carregando = false;
 
-  constructor(private api: ProdutoApiService) { }
+  constructor(private api: ProdutoApiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.carregarTipos();
@@ -2211,10 +2220,12 @@ export class ListaTiposComponent implements OnInit {
       dados => {
         this.tipos = Array.isArray(dados) ? dados : [];
         this.carregando = false;
+        this.cdr.detectChanges();  // força re-render após atualizar dados
       },
       erro => {
         console.error('Erro ao carregar tipos', erro);
         this.carregando = false;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -2228,10 +2239,12 @@ export class ListaTiposComponent implements OnInit {
       () => {
         this.mensagem = 'Tipo cadastrado com sucesso!';
         this.novoNome = '';
+        this.cdr.detectChanges();  // atualiza mensagem e input antes de recarregar
         this.carregarTipos();
       },
       erro => {
         this.mensagem = 'Erro ao cadastrar: ' + erro.message;
+        this.cdr.detectChanges();
       }
     );
   }
