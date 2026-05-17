@@ -1,1 +1,27 @@
-<p>form-produto works!</p>
+<h2>Cadastro de Produto</h2>
+<form (ngSubmit)="salvar()">
+  <div>
+    <label>Nome:</label>
+    <input type="text" [(ngModel)]="nome" name="nome" required>
+  </div>
+
+  <div>
+    <label>Preco:</label>
+    <input type="number" [(ngModel)]="preco" name="preco" required>
+  </div>
+
+  <div>
+    <label>Tipo:</label>
+    <select [(ngModel)]="tipoId" name="tipoId" required>
+      <option value="">Selecione...</option>
+      <option *ngFor="let tipo of tipos" [value]="tipo.id">
+        {{ tipo.nome }}
+      </option>
+    </select>
+  </div>
+
+  <button type="submit">Cadastrar</button>
+  <a routerLink="/produtos"> Cancelar</a>
+</form>
+
+<p *ngIf="mensagem">{{ mensagem }}</p>
