@@ -1453,16 +1453,16 @@ Framework TypeScript para criar interfaces web.
 > **Este projeto usa Angular 21.2** (`@angular/core: ^21.2.0`).
 > Angular 21 e a versao atual do framework e traz mudancas importantes em relacao a versoes anteriores (13 ou menos):
 >
-> | Caracteristica | Ate Angular 14 | Angular 15+ / 21 |
-> |---|---|---|
-> | Componentes | Necessitavam `NgModule` | **Standalone** por padrao (`standalone: true`) |
-> | Bootstrap | `platformBrowserDynamic().bootstrapModule(AppModule)` | **`bootstrapApplication(App, appConfig)`** |
-> | HTTP | `HttpClientModule` no imports do modulo | **`provideHttpClient()`** no `app.config.ts` |
-> | Reatividade | Apenas RxJS/Observables | Tambem **Signals** (`signal()`, `computed()`, `effect()`) |
-> | Control flow | `*ngIf`, `*ngFor` com `CommonModule` | Novo: **`@if`**, **`@for`** nativos no template |
-> | Nomes de arquivo | `lista-produtos.component.ts` | **`lista-produtos.ts`** (sufixo `.component` removido) |
-> | Build | `@angular-devkit/build-angular` | **`@angular/build`** (mais rapido, baseado em esbuild) |
-> | Testes | Karma + Jasmine | **Vitest** (mais moderno, compativel com Node) |
+> | Caracteristica   | Ate Angular 14                                          | Angular 15+ / 21                                                     |
+> | ---------------- | ------------------------------------------------------- | -------------------------------------------------------------------- |
+> | Componentes      | Necessitavam `NgModule`                               | **Standalone** por padrao (`standalone: true`)               |
+> | Bootstrap        | `platformBrowserDynamic().bootstrapModule(AppModule)` | **`bootstrapApplication(App, appConfig)`**                   |
+> | HTTP             | `HttpClientModule` no imports do modulo               | **`provideHttpClient()`** no `app.config.ts`               |
+> | Reatividade      | Apenas RxJS/Observables                                 | Tambem**Signals** (`signal()`, `computed()`, `effect()`) |
+> | Control flow     | `*ngIf`, `*ngFor` com `CommonModule`              | Novo:**`@if`**, **`@for`** nativos no template       |
+> | Nomes de arquivo | `lista-produtos.component.ts`                         | **`lista-produtos.ts`** (sufixo `.component` removido)     |
+> | Build            | `@angular-devkit/build-angular`                       | **`@angular/build`** (mais rapido, baseado em esbuild)       |
+> | Testes           | Karma + Jasmine                                         | **Vitest** (mais moderno, compativel com Node)                 |
 
 TypeScript = JavaScript com tipagem (menos erros).
 
@@ -1851,6 +1851,11 @@ export class ProdutoApiService {
   getTipos(): Observable<any> {
     return this.http.get(`${this.apiUrl}/tipos`);
   }
+
+  // POST: cria um novo tipo de produto
+  criarTipo(tipo: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/tipos`, tipo);
+  }
 }
 ```
 
@@ -1904,6 +1909,7 @@ No PowerShell (na pasta `produtos-web`):
 ```powershell
 ng generate component components/lista-produtos
 ng generate component components/form-produto
+ng generate component components/lista-tipos
 ```
 
 O comando `ng generate component` cria:
@@ -2077,12 +2083,13 @@ Em `src/app/components/form-produto/form-produto.ts`:
 ```typescript
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { ProdutoApiService } from '../../services/produto-api';
 
 @Component({
   selector: 'app-form-produto',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './form-produto.html',
   styleUrls: ['./form-produto.css']
 })
@@ -2093,7 +2100,7 @@ export class FormProdutoComponent implements OnInit {
   tipos: any[] = [];
   mensagem = '';
 
-  constructor(private api: ProdutoApiService) { }
+  constructor(private api: ProdutoApiService, private router: Router) { }
 
   ngOnInit(): void {
     this.carregarTipos();
@@ -2115,10 +2122,7 @@ export class FormProdutoComponent implements OnInit {
 
     this.api.criarProduto(novo).subscribe(
       () => {
-        this.mensagem = 'Produto criado com sucesso!';
-        this.nome = '';
-        this.preco = 0;
-        this.tipoId = 0;
+        this.router.navigate(['/produtos']);  // volta para a lista após salvar
       },
       erro => {
         this.mensagem = 'Erro ao criar produto: ' + erro.message;
@@ -2127,6 +2131,12 @@ export class FormProdutoComponent implements OnInit {
   }
 }
 ```
+
+Explicacoes adicionadas:
+
+- `Router`: servico do Angular para navegar entre rotas programaticamente.
+- `RouterLink`: diretiva para criar links de navegacao no template.
+- `this.router.navigate(['/produtos'])`: redireciona para a lista de produtos apos salvar com sucesso.
 
 Em `src/app/components/form-produto/form-produto.html`:
 
@@ -2137,12 +2147,12 @@ Em `src/app/components/form-produto/form-produto.html`:
     <label>Nome:</label>
     <input type="text" [(ngModel)]="nome" name="nome" required>
   </div>
-  
+
   <div>
     <label>Preco:</label>
     <input type="number" [(ngModel)]="preco" name="preco" required>
   </div>
-  
+
   <div>
     <label>Tipo:</label>
     <select [(ngModel)]="tipoId" name="tipoId" required>
@@ -2152,28 +2162,229 @@ Em `src/app/components/form-produto/form-produto.html`:
       </option>
     </select>
   </div>
-  
+
   <button type="submit">Cadastrar</button>
+  <a routerLink="/produtos"> Cancelar</a>
 </form>
 
 <p *ngIf="mensagem">{{ mensagem }}</p>
 ```
 
-### Parte 2: Integrar componentes no app (45 min)
+> O link `Cancelar` usa `routerLink="/produtos"` para voltar a lista sem recarregar a pagina.
+> Para funcionar, `RouterLink` deve estar no array `imports` do componente (ja adicionado acima).
+
+### Parte 1b: Criar componente lista-tipos (25 min)
+
+O componente `lista-tipos` agrupa a listagem e o formulario de cadastro de tipos em uma unica tela.
+Isso evita criar dois componentes separados e mantem a experiencia simples para o usuario.
+
+Editar `src/app/components/lista-tipos/lista-tipos.ts`:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ProdutoApiService } from '../../services/produto-api';
+
+@Component({
+  selector: 'app-lista-tipos',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './lista-tipos.html',
+  styleUrls: ['./lista-tipos.css']
+})
+export class ListaTiposComponent implements OnInit {
+  tipos: any[] = [];
+  novoNome = '';
+  mensagem = '';
+  carregando = false;
+
+  constructor(private api: ProdutoApiService) { }
+
+  ngOnInit(): void {
+    this.carregarTipos();
+  }
+
+  carregarTipos() {
+    this.carregando = true;
+    this.api.getTipos().subscribe(
+      dados => {
+        this.tipos = Array.isArray(dados) ? dados : [];
+        this.carregando = false;
+      },
+      erro => {
+        console.error('Erro ao carregar tipos', erro);
+        this.carregando = false;
+      }
+    );
+  }
+
+  cadastrar() {
+    if (!this.novoNome.trim()) {
+      this.mensagem = 'Informe o nome do tipo.';
+      return;
+    }
+    this.api.criarTipo({ nome: this.novoNome }).subscribe(
+      () => {
+        this.mensagem = 'Tipo cadastrado com sucesso!';
+        this.novoNome = '';
+        this.carregarTipos();
+      },
+      erro => {
+        this.mensagem = 'Erro ao cadastrar: ' + erro.message;
+      }
+    );
+  }
+}
+```
+
+Editar `src/app/components/lista-tipos/lista-tipos.html`:
+
+```html
+<h2>Tipos de Produto</h2>
+
+<form (ngSubmit)="cadastrar()">
+  <label>Novo tipo:</label>
+  <input type="text" [(ngModel)]="novoNome" name="novoNome" placeholder="Ex: Eletronico">
+  <button type="submit">Cadastrar</button>
+</form>
+
+<p *ngIf="mensagem">{{ mensagem }}</p>
+
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Nome</th>
+  </tr>
+  <tr *ngFor="let tipo of tipos">
+    <td>{{ tipo.id }}</td>
+    <td>{{ tipo.nome }}</td>
+  </tr>
+</table>
+```
+
+Diferencas em relacao ao `lista-produtos`:
+
+- Importa `FormsModule` alem de `CommonModule` (necessario para `[(ngModel)]` no formulario inline).
+- Tem metodo `cadastrar()` que chama `criarTipo()` do servico.
+- Apos cadastrar com sucesso, recarrega a lista automaticamente com `carregarTipos()`.
+
+### Parte 2: Integrar componentes no app com navegacao (20 min)
 
 > O componente `lista-produtos` já está completo desde a Aula 6, incluindo o botão Deletar e o método `deletar()`. Nesta aula não é necessário alterá-lo.
 
-Editar `src/app/app.html` para mostrar ambos:
+Nesta parte conectamos todos os componentes via roteamento e adicionamos uma barra de navegacao.
+
+**Passo 1 — Adicionar link "Cadastrar novo produto" em `lista-produtos.html`:**
+
+Editar `src/app/components/lista-produtos/lista-produtos.ts` para importar `RouterLink`:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ProdutoApiService } from '../../services/produto-api';
+
+@Component({
+  selector: 'app-lista-produtos',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './lista-produtos.html',
+  styleUrls: ['./lista-produtos.css']
+})
+export class ListaProdutosComponent implements OnInit {
+  // ... (resto do codigo permanece igual)
+```
+
+Editar `src/app/components/lista-produtos/lista-produtos.html` para adicionar o link de cadastro:
+
+```html
+<h2>Produtos</h2>
+
+<p><a routerLink="/produtos/novo">+ Cadastrar novo produto</a></p>
+
+<table border="1">
+  <tr>
+    <th>Nome</th>
+    <th>Preco</th>
+    <th>Tipo</th>
+    <th>Acao</th>
+  </tr>
+  <tr *ngFor="let produto of produtos">
+    <td>{{ produto.nome }}</td>
+    <td>R$ {{ produto.preco }}</td>
+    <td>{{ produto.tipoNome }}</td>
+    <td>
+      <button (click)="deletar(produto.id)">Deletar</button>
+    </td>
+  </tr>
+</table>
+```
+
+**Passo 2 — Atualizar `src/app/app.routes.ts` com todas as rotas:**
+
+```typescript
+import { Routes } from '@angular/router';
+import { ListaProdutosComponent } from './components/lista-produtos/lista-produtos';
+import { FormProdutoComponent } from './components/form-produto/form-produto';
+import { ListaTiposComponent } from './components/lista-tipos/lista-tipos';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'produtos', pathMatch: 'full' },
+  { path: 'produtos', component: ListaProdutosComponent },
+  { path: 'produtos/novo', component: FormProdutoComponent },
+  { path: 'tipos', component: ListaTiposComponent },
+  { path: '**', redirectTo: 'produtos' }
+];
+```
+
+Rotas definidas:
+
+| URL                | Componente                 | Descricao                                      |
+| ------------------ | -------------------------- | ---------------------------------------------- |
+| `/`              | —                         | Redireciona para `/produtos`                 |
+| `/produtos`      | `ListaProdutosComponent` | Lista e deleta produtos                        |
+| `/produtos/novo` | `FormProdutoComponent`   | Formulario de cadastro de produto              |
+| `/tipos`         | `ListaTiposComponent`    | Lista e cadastra tipos                         |
+| `/**`            | —                         | Qualquer URL invalida volta para `/produtos` |
+
+**Passo 3 — Atualizar `src/app/app.ts` para importar `RouterLink`:**
+
+```typescript
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, RouterLink],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
+})
+export class App {}
+```
+
+> `RouterLink` e necessario no `app.ts` porque o `app.html` vai usar `routerLink` nos links da navegacao.
+
+**Passo 4 — Atualizar `src/app/app.html` com navegacao:**
 
 ```html
 <h1>Sistema de Produtos</h1>
-<app-form-produto></app-form-produto>
-<app-lista-produtos></app-lista-produtos>
+<nav>
+  <a routerLink="/produtos">Produtos</a> |
+  <a routerLink="/tipos">Tipos de Produto</a>
+</nav>
+<hr>
+<router-outlet />
 ```
 
 Checkpoint:
 
-- CRUD completo funcionando no Angular.
+- Navegar para `http://localhost:4200` redireciona para `/produtos` e exibe a lista.
+- Clicar em "Tipos de Produto" na nav exibe o cadastro e lista de tipos.
+- Clicar em "+ Cadastrar novo produto" abre o formulario em `/produtos/novo`.
+- Apos salvar um produto, o sistema volta automaticamente para `/produtos`.
+- Clicar em "Cancelar" no formulario tambem volta para `/produtos`.
+- Todos os componentes usam o mesmo servico `ProdutoApiService`.
 
 ---
 
