@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProdutoApiService } from '../../services/produto-api';
@@ -16,7 +16,7 @@ export class ListaTiposComponent implements OnInit {
   mensagem = '';
   carregando = false;
 
-  constructor(private api: ProdutoApiService) { }
+  constructor(private api: ProdutoApiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.carregarTipos();
@@ -28,10 +28,12 @@ export class ListaTiposComponent implements OnInit {
       dados => {
         this.tipos = Array.isArray(dados) ? dados : [];
         this.carregando = false;
+        this.cdr.detectChanges();
       },
       erro => {
         console.error('Erro ao carregar tipos', erro);
         this.carregando = false;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -45,10 +47,12 @@ export class ListaTiposComponent implements OnInit {
       () => {
         this.mensagem = 'Tipo cadastrado com sucesso!';
         this.novoNome = '';
+        this.cdr.detectChanges();
         this.carregarTipos();
       },
       erro => {
         this.mensagem = 'Erro ao cadastrar: ' + erro.message;
+        this.cdr.detectChanges();
       }
     );
   }

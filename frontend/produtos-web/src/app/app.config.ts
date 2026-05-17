@@ -1,7 +1,8 @@
 import {
   ApplicationConfig,
   importProvidersFrom,
-  provideBrowserGlobalErrorListeners
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(),
     importProvidersFrom(FormsModule)

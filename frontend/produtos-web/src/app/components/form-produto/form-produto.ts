@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ProdutoApiService } from '../../services/produto-api';
@@ -6,7 +7,7 @@ import { ProdutoApiService } from '../../services/produto-api';
 @Component({
   selector: 'app-form-produto',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './form-produto.html',
   styleUrls: ['./form-produto.css']
 })
@@ -17,7 +18,7 @@ export class FormProdutoComponent implements OnInit {
   tipos: any[] = [];
   mensagem = '';
 
-  constructor(private api: ProdutoApiService, private router: Router) { }
+  constructor(private api: ProdutoApiService, private router: Router, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.carregarTipos();
@@ -25,7 +26,7 @@ export class FormProdutoComponent implements OnInit {
 
   carregarTipos() {
     this.api.getTipos().subscribe(
-      dados => this.tipos = dados,
+      dados => { this.tipos = dados; this.cdr.detectChanges(); },
       erro => console.error('Erro ao carregar tipos', erro)
     );
   }
@@ -43,6 +44,7 @@ export class FormProdutoComponent implements OnInit {
       },
       erro => {
         this.mensagem = 'Erro ao criar produto: ' + erro.message;
+        this.cdr.detectChanges();
       }
     );
   }
