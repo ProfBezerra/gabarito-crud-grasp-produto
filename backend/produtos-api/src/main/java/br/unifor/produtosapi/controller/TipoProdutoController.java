@@ -29,4 +29,16 @@ public class TipoProdutoController {
         TipoProduto tipo = service.criar(request.getNome());
         return ResponseEntity.status(HttpStatus.CREATED).body(tipo);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TipoProduto> atualizar(@PathVariable Long id,
+                                                 @Valid @RequestBody TipoProdutoRequest request) {
+        return ResponseEntity.ok(service.atualizar(id, request.getNome()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        service.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

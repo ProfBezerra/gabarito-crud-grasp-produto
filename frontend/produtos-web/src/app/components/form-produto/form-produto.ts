@@ -43,7 +43,11 @@ export class FormProdutoComponent implements OnInit {
         this.router.navigate(['/produtos']);  // volta para a lista após salvar
       },
       erro => {
-        this.mensagem = 'Erro ao criar produto: ' + erro.message;
+        if (erro.error && Array.isArray(erro.error.erros)) {
+          this.mensagem = erro.error.erros.join(' | ');
+        } else {
+          this.mensagem = 'Erro ao criar produto.';
+        }
         this.cdr.detectChanges();
       }
     );

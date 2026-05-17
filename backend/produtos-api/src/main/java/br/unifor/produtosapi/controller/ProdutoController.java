@@ -28,7 +28,13 @@ public class ProdutoController {
     public ResponseEntity<ProdutoResponse> criar(@Valid @RequestBody ProdutoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(request));
     }
-  
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProdutoResponse> atualizar(@PathVariable Long id,
+                                                     @Valid @RequestBody ProdutoRequest request) {
+        return ResponseEntity.ok(service.atualizar(id, request));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);

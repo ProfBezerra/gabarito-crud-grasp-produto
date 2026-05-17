@@ -5,12 +5,14 @@ public class ProdutoResponse {
     private Long id;
     private String nome;
     private Double preco;
+    private Long tipoId;
     private String tipoNome;
   
-    public ProdutoResponse(Long id, String nome, Double preco, String tipoNome) {
+    public ProdutoResponse(Long id, String nome, Double preco, Long tipoId, String tipoNome) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
+        this.tipoId = tipoId;
         this.tipoNome = tipoNome;
     }
   
@@ -26,7 +28,11 @@ public class ProdutoResponse {
     public Double getPreco() {
         return preco;
     }
-  
+
+    public Long getTipoId() {
+        return tipoId;
+    }
+
     public String getTipoNome() {
         return tipoNome;
     }

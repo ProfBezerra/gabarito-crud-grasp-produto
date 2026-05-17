@@ -16,6 +16,9 @@ export class ListaTiposComponent implements OnInit {
   mensagem = '';
   carregando = false;
 
+  editandoId: number | null = null;
+  nomeEditando = '';
+
   constructor(private api: ProdutoApiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -52,6 +55,54 @@ export class ListaTiposComponent implements OnInit {
       },
       erro => {
         this.mensagem = 'Erro ao cadastrar: ' + erro.message;
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  iniciarEdicao(tipo: any) {
+    this.editandoId = tipo.id;
+    this.nomeEditando = tipo.nome;
+    this.mensagem = '';
+    this.cdr.detectChanges();
+  }
+
+  cancelarEdicao() {
+    this.editandoId = null;
+    this.nomeEditando = '';
+    this.cdr.detectChanges();
+  }
+
+  salvarEdicao() {
+    if (!this.nomeEditando.trim()) {
+      this.mensagem = 'Nome nao pode estar vazio.';
+      this.cdr.detectChanges();
+      return;
+    }
+    this.api.atualizarTipo(this.editandoId!, { nome: this.nomeEditando }).subscribe(
+      () => {
+        this.mensagem = 'Tipo atualizado com sucesso!';
+        this.editandoId = null;
+        this.nomeEditando = '';
+        this.cdr.detectChanges();
+        this.carregarTipos();
+      },
+      erro => {
+        this.mensagem = 'Erro ao atualizar: ' + erro.message;
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  deletar(id: number) {
+    this.api.deletarTipo(id).subscribe(
+      () => {
+        this.mensagem = 'Tipo excluido com sucesso!';
+        this.cdr.detectChanges();
+        this.carregarTipos();
+      },
+      erro => {
+        this.mensagem = 'Erro ao excluir: ' + erro.message;
         this.cdr.detectChanges();
       }
     );

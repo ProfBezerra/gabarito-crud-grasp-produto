@@ -1,1 +1,271 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* ==============================================
+   UNIFOR THEME — Sistema de Gestão de Produtos
+   Universidade de Fortaleza
+   ============================================== */
+
+/* === VARIÁVEIS DE COR === */
+:root {
+  --unifor-blue: #044cf4;
+  --unifor-blue-dark: #033ab5;
+  --unifor-dark: #1d1d1b;
+  --unifor-light: #f4f4f4;
+  --unifor-border: #ddd;
+  --unifor-gold: #f5a52a;
+
+  /* Override Bootstrap primary */
+  --bs-primary: #044cf4;
+  --bs-primary-rgb: 4, 76, 244;
+  --bs-link-color: #044cf4;
+  --bs-link-hover-color: #033ab5;
+}
+
+/* === TIPOGRAFIA === */
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--unifor-light);
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  color: var(--unifor-dark);
+}
+
+/* === BARRA SUPERIOR (Topbar) === */
+.unifor-topbar {
+  background-color: var(--unifor-dark);
+  color: #aaa;
+  font-size: 0.75rem;
+  padding: 5px 0;
+  letter-spacing: 0.3px;
+}
+
+.unifor-topbar .topbar-highlight {
+  color: var(--unifor-gold);
+  font-weight: 600;
+}
+
+/* === NAVBAR PRINCIPAL === */
+.unifor-navbar {
+  background-color: var(--unifor-blue) !important;
+  padding: 0.6rem 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.unifor-navbar .navbar-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  color: white !important;
+  text-decoration: none;
+  padding: 0;
+}
+
+.unifor-brand-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: white;
+}
+
+.unifor-brand-sub {
+  font-size: 0.62rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.85;
+  color: white;
+}
+
+.unifor-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.4rem 0.9rem !important;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.unifor-navbar .nav-link:hover,
+.unifor-navbar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: white !important;
+}
+
+.unifor-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.unifor-navbar .navbar-toggler-icon {
+  filter: brightness(10);
+}
+
+/* === LINHA SEPARADORA OURO/VERMELHO === */
+.unifor-separator {
+  height: 4px;
+  background: linear-gradient(90deg, var(--unifor-gold) 0%, var(--unifor-blue) 50%, var(--unifor-blue-dark) 100%);
+}
+
+/* === CONTEÚDO PRINCIPAL === */
+main {
+  flex: 1;
+}
+
+/* === HEADINGS COM SUBLINHADO VERMELHO === */
+h2 {
+  position: relative;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45px;
+  height: 3px;
+  background-color: var(--unifor-blue);
+  border-radius: 2px;
+}
+
+/* === BOTÕES === */
+.btn-primary {
+  background-color: var(--unifor-blue) !important;
+  border-color: var(--unifor-blue) !important;
+  font-weight: 600;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--unifor-blue-dark) !important;
+  border-color: var(--unifor-blue-dark) !important;
+}
+
+.btn-success {
+  background-color: #1a7a3c !important;
+  border-color: #1a7a3c !important;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background-color: #155f30 !important;
+  border-color: #155f30 !important;
+}
+
+.btn-danger {
+  background-color: #1a237e !important;
+  border-color: #1a237e !important;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background-color: #111859 !important;
+  border-color: #111859 !important;
+}
+
+.btn-warning {
+  background-color: #1976d2 !important;
+  border-color: #1976d2 !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.btn-warning:hover {
+  background-color: #1565c0 !important;
+  border-color: #1565c0 !important;
+  color: white !important;
+}
+
+/* === TABELA === */
+.table {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.table thead.table-dark th {
+  background-color: var(--unifor-blue-dark) !important;
+  border-color: #333;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(4, 76, 244, 0.05);
+}
+
+/* === CARD UNIFOR === */
+.unifor-card {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
+  border-top: 4px solid var(--unifor-blue);
+}
+
+/* === FORMULÁRIOS === */
+.form-label {
+  font-weight: 600;
+  color: var(--unifor-dark);
+  font-size: 0.9rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--unifor-blue);
+  box-shadow: 0 0 0 0.2rem rgba(4, 76, 244, 0.2);
+}
+
+/* === ALERTAS === */
+.alert-danger {
+  border-left: 4px solid #dc3545;
+  background-color: #fff0f2;
+  color: #7a0017;
+  border-color: #f5c2cb;
+}
+
+.alert-info {
+  border-left: 4px solid #0d6efd;
+}
+
+.alert-success {
+  border-left: 4px solid #1a7a3c;
+}
+
+/* === FOOTER === */
+.unifor-footer {
+  background-color: var(--unifor-dark);
+  color: #999;
+  padding: 1.5rem 0;
+  font-size: 0.8rem;
+  margin-top: 2rem;
+}
+
+.unifor-footer-brand {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.unifor-footer a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.unifor-footer a:hover {
+  color: white;
+}

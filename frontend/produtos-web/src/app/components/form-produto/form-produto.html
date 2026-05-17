@@ -1,6 +1,7 @@
 <h2 class="mb-3">Cadastro de Produto</h2>
 
-<form (ngSubmit)="salvar()" class="col-lg-6">
+<div class="unifor-card col-lg-6">
+<form (ngSubmit)="salvar()">
   <div class="mb-3">
     <label class="form-label">Nome:</label>
     <input type="text" [(ngModel)]="nome" name="nome" required class="form-control">
@@ -28,3 +29,4 @@
 </form>
 
 <div *ngIf="mensagem" class="alert alert-danger mt-3">{{ mensagem }}</div>
+</div>

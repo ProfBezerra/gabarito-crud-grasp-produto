@@ -22,6 +22,11 @@ export class ProdutoApiService {
     return this.http.post(`${this.apiUrl}/produtos`, produto);
   }
 
+  // PUT: atualiza um produto
+  atualizarProduto(id: number, produto: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/produtos/${id}`, produto);
+  }
+
   // DELETE: remove um produto
   deletarProduto(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/produtos/${id}`);
@@ -35,5 +40,15 @@ export class ProdutoApiService {
   // POST: cria um novo tipo de produto
   criarTipo(tipo: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/tipos`, tipo);
+  }
+
+  // PUT: atualiza um tipo de produto
+  atualizarTipo(id: number, tipo: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/tipos/${id}`, tipo);
+  }
+
+  // DELETE: remove um tipo de produto
+  deletarTipo(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/tipos/${id}`);
   }
 }

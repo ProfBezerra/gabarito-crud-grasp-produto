@@ -17,12 +17,32 @@
     <tr>
       <th>ID</th>
       <th>Nome</th>
+      <th>Ações</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let tipo of tipos">
       <td>{{ tipo.id }}</td>
-      <td>{{ tipo.nome }}</td>
+
+      <!-- Modo leitura -->
+      <td *ngIf="editandoId !== tipo.id">{{ tipo.nome }}</td>
+
+      <!-- Modo edição inline -->
+      <td *ngIf="editandoId === tipo.id">
+        <input type="text" [(ngModel)]="nomeEditando" name="nomeEditando" class="form-control form-control-sm">
+      </td>
+
+      <!-- Botões -->
+      <td>
+        <ng-container *ngIf="editandoId !== tipo.id">
+          <button class="btn btn-warning btn-sm me-1" (click)="iniciarEdicao(tipo)">Editar</button>
+          <button class="btn btn-danger btn-sm" (click)="deletar(tipo.id)">Excluir</button>
+        </ng-container>
+        <ng-container *ngIf="editandoId === tipo.id">
+          <button class="btn btn-success btn-sm me-1" (click)="salvarEdicao()">Salvar</button>
+          <button class="btn btn-secondary btn-sm" (click)="cancelarEdicao()">Cancelar</button>
+        </ng-container>
+      </td>
     </tr>
   </tbody>
 </table>
