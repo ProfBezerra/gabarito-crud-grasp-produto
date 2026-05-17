@@ -1,0 +1,20 @@
+<h2>Tipos de Produto</h2>
+
+<form (ngSubmit)="cadastrar()">
+  <label>Novo tipo:</label>
+  <input type="text" [(ngModel)]="novoNome" name="novoNome" placeholder="Ex: Eletronico">
+  <button type="submit">Cadastrar</button>
+</form>
+
+<p *ngIf="mensagem">{{ mensagem }}</p>
+
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Nome</th>
+  </tr>
+  <tr *ngFor="let tipo of tipos">
+    <td>{{ tipo.id }}</td>
+    <td>{{ tipo.nome }}</td>
+  </tr>
+</table>
