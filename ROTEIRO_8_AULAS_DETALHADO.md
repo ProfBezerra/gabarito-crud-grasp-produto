@@ -973,10 +973,10 @@ public class ProdutoService {
     public ProdutoResponse criar(ProdutoRequest request) {
         TipoProduto tipo = tipoProdutoRepository.findById(request.getTipoId())
             .orElseThrow(() -> new RuntimeException("Tipo nao encontrado"));
-    
+  
         Produto produto = new Produto(request.getNome(), request.getPreco(), tipo);
         Produto salvo = produtoRepository.save(produto);
-    
+  
         return new ProdutoResponse(salvo.getId(), salvo.getNome(), 
             salvo.getPreco(), salvo.getTipo().getNome());
     }
@@ -1394,7 +1394,6 @@ git commit -m "aula5: controllers rest e endpoints completos"
 - Qual diferenca entre GET e POST?
 - Por que 201 em POST?
 - O que faz @Valid?
-
 - O que é REST e quais são seus princípios básicos?
 - O que é Swagger/OpenAPI e como ele gera documentação interativa?
 - Qual a diferença prática entre testar com Postman e com Swagger UI?
@@ -1407,36 +1406,37 @@ git commit -m "aula5: controllers rest e endpoints completos"
 #### Respostas sugeridas (curtas)
 
 - **Qual diferença entre GET e POST?**
+
   - `GET` recupera recursos (seguro, idempotente); `POST` cria recursos (não idempotente) e costuma enviar um body.
-
 - **Por que 201 em POST?**
+
   - `201 Created` indica que um recurso foi criado com sucesso; a resposta costuma conter o header `Location` apontando para o novo recurso.
-
 - **O que faz `@Valid`?**
+
   - Dispara a validação das anotações de Bean Validation no DTO; em caso de erro o Spring lança `MethodArgumentNotValidException` e retorna `400 Bad Request` por padrão (pode ser customizado).
-
 - **O que é REST e quais são seus princípios básicos?**
+
   - REST (Representational State Transfer) é um estilo arquitetural: recursos identificados por URIs, uso de verbos HTTP, mensagens auto-descritivas, e statelessness (sem estado no servidor).
-
 - **O que é Swagger/OpenAPI e como ele gera documentação interativa?**
+
   - OpenAPI é a especificação (contrato) da API em JSON/YAML; Swagger (UI) consome esse documento e gera uma interface interativa que mostra endpoints, modelos e permite enviar requisições.
-
 - **Qual a diferença prática entre testar com Postman e com Swagger UI?**
+
   - `Postman` é um cliente HTTP completo (coleções, testes, ambientes, scripts). `Swagger UI` é uma documentação interativa gerada automaticamente para explorar e testar endpoints rapidamente.
-
 - **O que é CORS e por que precisamos configurá-lo para o frontend Angular?**
+
   - CORS é um mecanismo de segurança do navegador que bloqueia requisições entre origens diferentes por padrão; o servidor precisa permitir explicitamente as origens/métodos para que o frontend (`http://localhost:4200`) faça chamadas ao backend.
-
 - **Quando usar POST vs PUT vs PATCH na API?**
+
   - `POST` para criar; `PUT` para substituir/atualizar toda a representação (idempotente); `PATCH` para atualização parcial (apenas campos necessários).
-
 - **Como mapear DTOs para entidades e por que não expor entidades diretamente?**
+
   - Mapear manualmente ou com bibliotecas (MapStruct/ModelMapper). Não exponha entidades porque elas carregam detalhes de persistência e podem permitir over-posting; DTOs decouplam contratos da API.
-
 - **Como funcionam as validações com Bean Validation e como o Spring retorna erros?**
-  - Anotações como `@NotBlank`, `@Positive` no DTO; `@Valid` no controller ativa a validação; Spring retorna `400 Bad Request` com detalhes de campos inválidos (personalizável via `@ControllerAdvice`).
 
+  - Anotações como `@NotBlank`, `@Positive` no DTO; `@Valid` no controller ativa a validação; Spring retorna `400 Bad Request` com detalhes de campos inválidos (personalizável via `@ControllerAdvice`).
 - **Quais códigos HTTP devemos usar para sucesso, criação, erro de validação e recurso não encontrado?**
+
   - Sucesso: `200 OK`; Criação: `201 Created`; Erro de validação: `400 Bad Request`; Recurso não encontrado: `404 Not Found`.
 
 ## Aula 6 (90 min) - Frontend Angular Basico
@@ -1460,6 +1460,7 @@ TypeScript é uma linguagem construída sobre JavaScript que adiciona tipagem es
 **JavaScript vs TypeScript:**
 
 JavaScript:
+
 ```javascript
 function somar(a, b) {
   return a + b;
@@ -1469,6 +1470,7 @@ somar("5", 10);  // "510" (concatenação, erro silencioso!)
 ```
 
 TypeScript:
+
 ```typescript
 function somar(a: number, b: number): number {
   return a + b;
@@ -1545,25 +1547,29 @@ this.api.getProdutos()
 - `Observable` é ótimo para eventos, requisições HTTP, tempo, formulários reativos e valores assíncronos.
 
 **Ciclo de vida:** Componentes têm fases (criação, renderização, destruição).
-  - `ngOnInit`: chamado uma vez, após o componente ser criado.
-  - `ngOnDestroy`: chamado antes de destruir o componente (limpeza).
-  - Outros: `ngAfterViewInit`, `ngAfterContentInit`, `ngOnChanges`.
+
+- `ngOnInit`: chamado uma vez, após o componente ser criado.
+- `ngOnDestroy`: chamado antes de destruir o componente (limpeza).
+- Outros: `ngAfterViewInit`, `ngAfterContentInit`, `ngOnChanges`.
 
 #### Estrutura basica Angular
 
 ```
 app/
-  app.module.ts = registra componentes, services, imports
-  app.component.ts = componente raiz (TypeScript)
-  app.component.html = template (HTML/Angular)
-  app.component.css = estilos
-  services/
-    produto-api.service.ts = serviço que chama API
-  components/
-    lista-produtos/
-      lista-produtos.component.ts
-      lista-produtos.component.html
-      lista-produtos.component.css
+  main.ts = bootstrap da aplicação
+  app/
+    app.ts = componente raiz (standalone)
+    app.html = template (HTML/Angular)
+    app.css = estilos
+    app.config.ts = configuração de providers e rotas
+    app.routes.ts = definição de rotas
+    services/
+      produto-api.service.ts = serviço que chama API
+    components/
+      lista-produtos/
+        lista-produtos.component.ts
+        lista-produtos.component.html
+        lista-produtos.component.css
 ```
 
 #### Template syntax (HTML com Angular)
@@ -1673,9 +1679,10 @@ Comandos principais:
 **Por que usar ng?**
 
 Sem ng, você precisaria:
+
 1. Criar arquivos `.ts`, `.html`, `.css` manualmente.
 2. Escrever boilerplate (código repetitivo).
-3. Registrar componentes manualmente no `app.module.ts`.
+3. Registrar componentes e providers manualmente no módulo ou no bootstrap da aplicação.
 
 Com ng, tudo é automático — economiza tempo e reduz erros.
 
@@ -1713,12 +1720,14 @@ ng serve
 ```
 
 Flags explicadas:
-- `--routing`: cria `AppRoutingModule` para navegação entre páginas.
+
+- `--routing`: ativa suporte a roteamento no projeto.
 - `--style=css`: usa CSS simples (sem SCSS/LESS).
 
 Acessar: `http://localhost:4200`
 
 Passos internos que o Angular CLI faz:
+
 1. Cria pasta `produtos-web/` com estrutura básica.
 2. Cria `src/` com componentes, services, módulos.
 3. Cria `package.json` com dependências (Angular, TypeScript, RxJS).
@@ -1786,43 +1795,41 @@ Explicações importantes:
 - Cada método retorna `Observable<any>`: a resposta HTTP é um fluxo assíncrono que pode ser processado com `.subscribe()`.
 - `Observable` não executa até ser inscrito (lazy evaluation).
 
-#### 30-45 min: Importar HttpClientModule e FormsModule
+#### 30-45 min: Configurar providers do Angular
 
-Editar: `src/app/app.module.ts`
+Editar: `src/app/app.config.ts`
 
 ```typescript
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  provideBrowserGlobalErrorListeners
+} from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
-import { AppRoutingModule } from './app-routing.module';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
-import { AppComponent } from './app.component';
+import { routes } from './app.routes';
 
-@NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,         // Permite usar diretivas Angular (ngIf, ngFor, etc)
-    HttpClientModule,      // Habilita requisições HTTP (GET, POST, DELETE)
-    FormsModule,           // Habilita two-way binding [(ngModel)] em forms
-    AppRoutingModule       // Habilita navegação entre rotas
-  ],
-  providers: [],           // Lista de serviços globais (services)
-  bootstrap: [AppComponent] // Componente raiz a iniciar
-})
-export class AppModule { }
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideRouter(routes),
+    provideHttpClient(),
+    importProvidersFrom(FormsModule)
+  ]
+};
 ```
 
 Explicações:
 
-- `declarations`: lista componentes que pertencem a este módulo.
-- `imports`: importa outros módulos (esticam funcionalidades do Angular ao seu app).
-- `providers`: lista serviços singleton criados uma vez.
-- `bootstrap`: qual componente renderizar primeiro (AppComponent).
+- `provideHttpClient()`: habilita HttpClient no app, necessário para `ProdutoApiService`.
+- `provideForms()`: habilita `NgModel` e formulários template-driven.
+- `provideRouter(routes)`: habilita rotas.
+- `provideBrowserGlobalErrorListeners()`: captura erros globais no browser.
 
-Sem esses módulos, diretivas, two-way binding e HTTP não funcionariam.
+Sem esses providers, o serviço e o formulário não funcionariam corretamente.
 
 #### 45-60 min: Criar componentes
 
@@ -1834,12 +1841,13 @@ ng generate component components/form-produto
 ```
 
 O comando `ng generate component` cria:
+
 - `.ts` (TypeScript com lógica);
 - `.html` (template);
 - `.css` (estilos);
 - `.spec.ts` (testes automatizados).
 
-E registra automaticamente os componentes no `app.module.ts` nas `declarations`.
+E registra automaticamente os componentes no Angular, sem precisar de um `AppModule` tradicional, usando `bootstrapApplication` e providers no `app.config.ts`.
 
 #### 60-75 min: Testar serviço simples
 
@@ -1910,6 +1918,7 @@ Editar `src/app/components/lista-produtos/lista-produtos.component.html`:
 ```
 
 Sintaxe usada:
+
 - `*ngIf="carregando"`: renderiza apenas se a expressão for true.
 - `*ngFor="let produto of produtos"`: repete elemento para cada item da lista.
 - `{{ produto.nome }}`: interpolação (exibe valor da propriedade).
@@ -1927,7 +1936,6 @@ Checkpoint:
 - Angular consome dados do backend via serviço.
 - Componente exibe lista dinamicamente.
 - Fluxo completo: backend API → serviço Angular → componente → template.
-
 - Angular consome dados do backend.
 
 ---
