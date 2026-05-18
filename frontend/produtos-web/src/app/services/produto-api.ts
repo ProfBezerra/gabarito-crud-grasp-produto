@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'  // Torna serviço singleton (uma instância global)
 })
 export class ProdutoApiService {
 
-  private apiUrl = 'http://localhost:8080';  // URL do backend Spring Boot
+  private apiUrl = environment.apiUrl;  // URL do backend Spring Boot
 
   constructor(private http: HttpClient) { }  // Injeta HttpClient do Angular
 
