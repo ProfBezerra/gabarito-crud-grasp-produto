@@ -1,11 +1,7 @@
-# Unidade: Programação Orientada a Aspectos com Spring
-
-**Carga horária sugerida:** 12 horas-aula
-**Foco:** material conceitual para apresentação em sala
-
 # UNIDADE II – Programação Orientada a Aspectos (POA) com Spring Boot
 
 **Carga Horária:** 12 horas-aula
+**Foco:** material conceitual para apresentação em sala
 
 ## Objetivos da Unidade
 
@@ -160,13 +156,19 @@ SegurancaAspect
 AuditoriaAspect
 ```
 
+Resultado esperado:
+
+- Código de negócio mais limpo
+- Menos repetição
+- Padronização de comportamento técnico
+
 ---
 
 # 5. Conceitos Fundamentais
 
 ## Aspect
 
-Representa um interesse transversal.
+Representa um interesse transversal. É uma classe que encapsula comportamento transversal.
 
 ### Exemplo
 
@@ -182,6 +184,7 @@ public class LogAspect {
 ## Join Point
 
 Representa um ponto durante a execução da aplicação onde um aspecto pode atuar.
+No Spring AOP, tipicamente é a execução de um método de um bean Spring.
 
 Exemplos:
 
@@ -193,7 +196,7 @@ Exemplos:
 
 ## Pointcut
 
-Define quais Join Points serão interceptados.
+Define quais Join Points serão interceptados. É a expressão que seleciona onde o aspecto vai atuar.
 
 ### Exemplo
 
@@ -207,11 +210,25 @@ Significa:
 * De qualquer classe
 * Dentro do pacote service
 
+Outro exemplo usando `within`:
+
+```java
+within(br.unifor.produtosapi.service..)
+```
+
 ---
 
 ## Advice
 
 Representa a ação executada quando um Pointcut é atingido.
+
+Tipos principais:
+
+- `@Before`: antes do método
+- `@After`: depois do método (com sucesso ou erro)
+- `@AfterReturning`: apenas quando termina com sucesso
+- `@AfterThrowing`: apenas quando ocorre exceção
+- `@Around`: envolve a execução (antes e depois); o mais poderoso
 
 ---
 
@@ -221,7 +238,7 @@ Representa a ação executada quando um Pointcut é atingido.
 
 Spring AOP é o módulo de Programação Orientada a Aspectos fornecido pelo Spring Framework.
 
-Ele permite implementar aspectos de forma simples utilizando anotações.
+Ele permite implementar aspectos de forma simples utilizando anotações, sem precisar de configuração complexa.
 
 ---
 
@@ -230,9 +247,16 @@ Ele permite implementar aspectos de forma simples utilizando anotações.
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
+    <artifactId>spring-boot-starter-aspectj</artifactId>
 </dependency>
 ```
+
+---
+
+## Como o Spring aplica o aspecto
+
+- O Spring cria proxies para beans gerenciados (`@Service`, `@Component`, `@Repository`, `@RestController`).
+- Ao chamar o bean pelo container, o proxy executa o advice antes/depois do método alvo.
 
 ---
 
@@ -306,7 +330,7 @@ public void erro(Exception ex) {
 
 Executa antes e depois do método.
 
-É o tipo de Advice mais poderoso.
+É o tipo de Advice mais poderoso e mais usado em observabilidade.
 
 ```java
 @Around(
@@ -517,6 +541,11 @@ public class MonitoramentoAspect {
 * Validações de domínio
 * Processamento principal da aplicação
 
+Regra prática:
+
+- Se for transversal e repetitivo, AOP ajuda.
+- Se for regra do domínio, mantenha no service/domain.
+
 ---
 
 # 12. Limitações do Spring AOP
@@ -544,11 +573,101 @@ Também não intercepta:
 * Construtores
 * Campos/Atributos
 
-Para esses cenários utiliza-se AspectJ completo.
+### Self-invocation
+
+Chamada de um método para outro dentro da mesma classe normalmente não passa pelo proxy, então o advice pode não disparar.
+
+```java
+@Service
+public class PedidoService {
+    public void processar() {
+        validar(); // NÃO passa pelo proxy — advice não dispara
+    }
+    public void validar() { ... }
+}
+```
+
+Para cenários que exigem interceptar construtores ou self-invocations, utiliza-se AspectJ completo.
 
 ---
 
-# 13. Exercício Prático
+# 13. Exemplo Prático no Projeto da Turma
+
+## O que foi adicionado
+
+1. Dependência AOP no Maven:
+
+- arquivo: `backend/produtos-api/pom.xml`
+
+2. Aspecto de observabilidade:
+
+- arquivo: `backend/produtos-api/src/main/java/br/unifor/produtosapi/aspect/ObservabilidadeAspect.java`
+- intercepta métodos de `controller` e `service`
+- registra início/fim, tempo em ms e status de sucesso/erro
+
+## Código do aspecto
+
+```java
+@Aspect
+@Component
+public class ObservabilidadeAspect {
+
+    @Pointcut("within(br.unifor.produtosapi.controller..*) || within(br.unifor.produtosapi.service..*)")
+    public void camadasApi() {}
+
+    @Around("camadasApi()")
+    public Object registrarTempoEStatus(ProceedingJoinPoint joinPoint) throws Throwable {
+        // log de início
+        // executa método alvo
+        // log de fim com tempo e status
+    }
+}
+```
+
+## Como demonstrar em sala
+
+1. Subir backend:
+
+```bash
+cd backend/produtos-api
+./mvnw spring-boot:run
+```
+
+2. Chamar endpoint:
+
+```bash
+curl http://localhost:8080/tipos
+```
+
+3. Mostrar logs no console:
+
+- `INICIO metodo=...`
+- `FIM metodo=... tempoMs=... sucesso=true`
+
+4. Forçar erro (id inexistente em update/delete) para mostrar:
+
+- `sucesso=false`
+- tipo da exceção e mensagem
+
+## Objetivo didático da demo
+
+- Provar que o service/controller não precisou receber código de log.
+- Mostrar separação de responsabilidades na prática.
+- Evidenciar ganho de padronização e rastreabilidade.
+
+---
+
+# 14. Roteiro para Apresentação em Sala (35–45 min)
+
+1. Problema real: código repetido (5 min)
+2. Conceitos: Aspect, Join Point, Pointcut, Advice (10 min)
+3. Spring AOP e proxies (8 min)
+4. Limitações e armadilhas, incluindo self-invocation (7 min)
+5. Exemplo no projeto da turma — demo ao vivo (10–15 min)
+
+---
+
+# 15. Exercício Prático
 
 Desenvolva uma API Spring Boot contendo:
 
@@ -574,18 +693,19 @@ Desenvolva uma API Spring Boot contendo:
 
 ---
 
-# 14. Questões para Fixação
+# 16. Questões para Fixação
 
-1. O que são interesses transversais?
-2. Explique espalhamento e entrelaçamento.
+1. O que são interesses transversais? O que os caracteriza?
+2. Explique com exemplos a diferença entre espalhamento (scattering) e entrelaçamento (tangling).
 3. O que é um Aspect?
 4. O que é um Join Point?
 5. O que é um Pointcut?
-6. O que é um Advice?
-7. Quais são os tipos de Advice existentes?
-8. Qual a diferença entre Before e Around?
-9. Quando utilizar Spring AOP?
-10. Quais são as limitações do Spring AOP?
+6. O que é um Advice? Quais são os tipos existentes?
+7. Qual a diferença entre `@Before` e `@Around`?
+8. Por que `@Around` é tão usado em observabilidade?
+9. O que é self-invocation e por que pode impedir a interceptação?
+10. Quando utilizar Spring AOP? Quando evitar?
+11. Quais são as limitações do Spring AOP?
 
 ---
 
@@ -595,256 +715,13 @@ Nesta unidade foram estudados:
 
 * Motivação para Programação Orientada a Aspectos.
 * Interesses transversais.
-* Problemas de espalhamento e entrelaçamento.
-* Conceitos fundamentais da POA.
-* Spring AOP.
-* Tipos de Advice.
+* Problemas de espalhamento (scattering) e entrelaçamento (tangling).
+* Conceitos fundamentais da POA: Aspect, Join Point, Pointcut, Advice.
+* Spring AOP e o modelo baseado em proxies.
+* Tipos de Advice: Before, After, AfterReturning, AfterThrowing, Around.
 * Aspectos baseados em anotações.
 * Implementação de logging, auditoria e monitoramento.
 * Boas práticas e limitações do Spring AOP.
+* Exemplo prático aplicado ao projeto da turma.
 
 A Programação Orientada a Aspectos é uma importante técnica para melhorar a modularização, manutenção e reutilização de código em aplicações corporativas desenvolvidas com Spring Boot.
-
----
-
-## 1. Problema que a AOP resolve
-
-A Programação Orientada a Objetos (POO) organiza bem regras de negócio, mas não resolve de forma elegante funcionalidades que se repetem em vários lugares do sistema.
-
-Exemplos clássicos:
-
-- Logging
-- Auditoria
-- Monitoramento (tempo, contadores)
-- Segurança
-- Tratamento padronizado de exceções
-
-Quando essas preocupações entram em vários métodos, surgem dois problemas:
-
-- **Scattering (espalhamento):** o mesmo codigo aparece em varias classes.
-- **Tangling (entrelaçamento):** regra de negócio e preocupações técnicas ficam misturadas no mesmo método.
-
-### Explicando de forma direta
-
-- **Scattering (espalhamento):** a mesma preocupação técnica fica distribuída em vários pontos do sistema.
-  Exemplo: chamadas de log repetidas em diversos métodos de vários services.
-- **Tangling (entrelaçamento):** várias responsabilidades diferentes ficam misturadas dentro do mesmo método.
-  Exemplo: no mesmo método há regra de negócio, validação de permissão, logging e tratamento técnico de erro.
-
-Resumo prático:
-
-- **Scattering:** uma preocupação em muitos lugares.
-- **Tangling:** muitas preocupações no mesmo lugar.
-
----
-
-## 2. Ideia central da AOP
-
-A AOP (Aspect-Oriented Programming) separa os **interesses transversais** da lógica principal.
-
-Sem AOP:
-
-- ProdutoService = regra de negócio + log + monitoramento
-
-Com AOP:
-
-- ProdutoService = regra de negócio
-- ObservabilidadeAspect = log + tempo + status
-
-Resultado esperado:
-
-- Código de negócio mais limpo
-- Menos repetição
-- Padronização de comportamento técnico
-
----
-
-## 3. Conceitos fundamentais
-
-### 3.1 Aspect
-
-Classe que encapsula comportamento transversal.
-
-### 3.2 Join Point
-
-Ponto de execução onde o aspecto pode atuar (no Spring AOP, tipicamente execução de método de bean Spring).
-
-### 3.3 Pointcut
-
-Expressão que seleciona quais join points serão interceptados.
-
-Exemplo de ideia:
-
-- Todos os métodos de classes em `service`
-- Todos os métodos de classes em `controller`
-
-### 3.4 Advice
-
-Ação executada no join point selecionado.
-
-Tipos mais usados:
-
-- `@Before`: antes do método
-- `@After`: depois do método (com sucesso ou erro)
-- `@AfterReturning`: apenas quando termina com sucesso
-- `@AfterThrowing`: apenas quando ocorre exceção
-- `@Around`: envolve a execução (antes e depois); o mais poderoso
-
----
-
-## 4. Spring AOP na pratica
-
-### 4.1 O que o Spring oferece
-
-No Spring, você cria aspectos com anotações, sem precisar de configuração complexa.
-
-Dependencia Maven:
-
-```xml
-<dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-aspectj</artifactId>
-</dependency>
-```
-
-### 4.2 Como o Spring aplica o aspecto
-
-- O Spring cria proxies para beans gerenciados (`@Service`, `@Component`, `@Repository`, `@RestController`).
-- Ao chamar o bean pelo container, o proxy executa o advice antes/depois do metodo alvo.
-
----
-
-## 5. Limites importantes (muito cobrado em prova)
-
-Spring AOP:
-
-- Atua em beans gerenciados pelo container Spring.
-- Intercepta execução de métodos (modelo proxy-based).
-
-Não cobre diretamente:
-
-- Objetos criados com `new` fora do container
-- Construtores
-- Campos
-- Métodos `private`
-
-Observação importante:
-
-- **Self-invocation:** chamada de um método para outro dentro da mesma classe normalmente não passa pelo proxy, então o advice pode não disparar.
-
-Quando for necessário interceptar mais cenários (como construtores), usa-se AspectJ completo.
-
----
-
-## 6. Quando usar e quando evitar
-
-Use AOP para:
-
-- Logging técnico
-- Auditoria
-- Métricas e tempo de execução
-- Políticas transversais de segurança
-
-Evite AOP para:
-
-- Regra de negócio principal
-- Cálculo de domínio
-- Decisões centrais de caso de uso
-
-Regra pratica:
-
-- Se for transversal e repetitivo, AOP ajuda.
-- Se for regra do domínio, mantenha no service/domain.
-
----
-
-## 7. Roteiro conceitual para apresentação (sugestão 35-45 min)
-
-1. Problema real: código repetido (5 min)
-2. Conceitos: Aspect, Join Point, Pointcut, Advice (10 min)
-3. Spring AOP e proxies (8 min)
-4. Limitações e armadilhas (7 min)
-5. Exemplo no projeto da turma (10-15 min)
-
----
-
-## 8. Exemplo prático no backend deste projeto
-
-### 8.1 O que foi adicionado
-
-1. Dependência AOP no Maven:
-
-- arquivo: `backend/produtos-api/pom.xml`
-
-2. Aspecto de observabilidade:
-
-- arquivo: `backend/produtos-api/src/main/java/br/unifor/produtosapi/aspect/ObservabilidadeAspect.java`
-- intercepta métodos de `controller` e `service`
-- registra início/fim, tempo em ms e status de sucesso/erro
-
-### 8.2 Código do aspecto (resumo)
-
-```java
-@Aspect
-@Component
-public class ObservabilidadeAspect {
-
-    @Pointcut("within(br.unifor.produtosapi.controller..*) || within(br.unifor.produtosapi.service..*)")
-    public void camadasApi() {}
-
-    @Around("camadasApi()")
-    public Object registrarTempoEStatus(ProceedingJoinPoint joinPoint) throws Throwable {
-        // log de início
-        // executa método alvo
-        // log de fim com tempo e status
-    }
-}
-```
-
-### 8.3 Como demonstrar em sala
-
-1. Subir backend:
-
-```bash
-cd backend/produtos-api
-./mvnw spring-boot:run
-```
-
-2. Chamar endpoint (exemplo):
-
-```bash
-curl http://localhost:8080/tipos
-```
-
-3. Mostrar logs no console:
-
-- `INICIO metodo=...`
-- `FIM metodo=... tempoMs=... sucesso=true`
-
-4. Forçar erro (id inexistente, por exemplo em update/delete) para mostrar:
-
-- `sucesso=false`
-- tipo da exceção e mensagem
-
-### 8.4 Objetivo didático da demo
-
-- Provar que o service/controller nao precisou receber codigo de log.
-- Mostrar separação de responsabilidades na prática.
-- Evidenciar ganho de padronização e rastreabilidade.
-
----
-
-## 9. Perguntas de fixação
-
-1. O que caracteriza um interesse transversal?
-2. Diferencie scattering e tangling.
-3. Qual a diferença entre pointcut e advice?
-4. Por que `@Around` e tao usado em observabilidade?
-5. Por que self-invocation pode impedir a interceptação?
-6. Quando você não deveria usar AOP?
-
----
-
-## 10. Fechamento
-
-A AOP com Spring não substitui modelagem de domínio: ela complementa a arquitetura separando preocupações transversais. Em projetos reais, essa separação reduz duplicação, melhora manutenção e facilita evolução do sistema.
