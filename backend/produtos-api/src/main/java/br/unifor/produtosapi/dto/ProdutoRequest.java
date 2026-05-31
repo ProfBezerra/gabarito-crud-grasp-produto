@@ -38,4 +38,13 @@ public class ProdutoRequest {
     public void setTipoId(Long tipoId) {
         this.tipoId = tipoId;
     }
+
+    @Override
+    public String toString() {
+        return "ProdutoRequest{" +
+            "nome='" + nome + '\'' +
+            ", preco=" + preco +
+            ", tipoId=" + tipoId +
+            '}';
+    }
 }

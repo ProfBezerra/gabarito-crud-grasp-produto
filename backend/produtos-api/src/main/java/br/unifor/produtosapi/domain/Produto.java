@@ -60,4 +60,14 @@ public class Produto {
     public void setTipo(TipoProduto tipo) {
         this.tipo = tipo;
     }
+
+    @Override
+    public String toString() {
+        return "Produto{" +
+            "id=" + id +
+            ", nome='" + nome + '\'' +
+            ", preco=" + preco +
+            ", tipo=" + tipo +
+            '}';
+    }
 }

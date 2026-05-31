@@ -36,4 +36,15 @@ public class ProdutoResponse {
     public String getTipoNome() {
         return tipoNome;
     }
+
+    @Override
+    public String toString() {
+        return "ProdutoResponse{" +
+            "id=" + id +
+            ", nome='" + nome + '\'' +
+            ", preco=" + preco +
+            ", tipoId=" + tipoId +
+            ", tipoNome='" + tipoNome + '\'' +
+            '}';
+    }
 }

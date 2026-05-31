@@ -232,6 +232,147 @@ Tipos principais:
 
 ---
 
+## Como obter atributos do método no Advice (teoria + prática)
+
+No Spring AOP, os detalhes do método interceptado chegam pelo objeto de join point:
+
+- `JoinPoint` para `@Before`, `@After`, `@AfterReturning`, `@AfterThrowing`
+- `ProceedingJoinPoint` para `@Around`
+
+Com ele, é possível acessar assinatura e metadados do método.
+
+### Exemplo didático
+
+```java
+@Around("execution(* br.unifor.produtosapi.service..*(..))")
+public Object inspecionarMetodo(ProceedingJoinPoint pjp) throws Throwable {
+    MethodSignature signature = (MethodSignature) pjp.getSignature();
+    Method metodo = signature.getMethod();
+
+    String nomeMetodo = metodo.getName();
+    Class<?> classeRetorno = metodo.getReturnType();
+    Class<?>[] tiposParametros = metodo.getParameterTypes();
+    Annotation[] anotacoes = metodo.getDeclaredAnnotations();
+    Object[] valoresArgumentos = pjp.getArgs();
+    String classeAlvo = pjp.getTarget().getClass().getSimpleName();
+
+    Object retorno = pjp.proceed();
+    return retorno;
+}
+```
+
+### O que foi obtido no exemplo
+
+- Nome do método (`metodo.getName()`)
+- Tipo de retorno (`metodo.getReturnType()`)
+- Tipos dos parâmetros (`metodo.getParameterTypes()`)
+- Anotações do método (`metodo.getDeclaredAnnotations()`)
+- Valores dos argumentos na chamada (`pjp.getArgs()`)
+- Classe real do bean alvo (`pjp.getTarget()`)
+
+---
+
+## Detalhes de Pointcut (como ler a expressão)
+
+Formato mais comum:
+
+```java
+execution(modificadores? retorno pacote.Classe.metodo(parametros) excecoes?)
+```
+
+Exemplo:
+
+```java
+execution(* br.unifor.produtosapi.service..*(..))
+```
+
+Leitura:
+
+- `*` (retorno): qualquer tipo de retorno
+- `br.unifor.produtosapi.service..`: qualquer classe nesse pacote e subpacotes
+- `*`: qualquer nome de método
+- `(..)`: qualquer quantidade e tipo de parâmetros
+
+### Designators importantes
+
+- `execution(...)`: filtra por assinatura do método
+- `within(...)`: filtra por tipo/classe
+- `args(...)`: filtra pelos tipos dos argumentos em runtime
+- `@annotation(...)`: filtra métodos anotados
+- `this(...)` e `target(...)`: filtra tipo do proxy/alvo
+
+### Composição lógica
+
+- `&&` (E)
+- `||` (OU)
+- `!` (NÃO)
+
+Exemplo composto:
+
+```java
+@Pointcut("within(br.unifor.produtosapi.service..*) && !execution(* *..*Test.*(..))")
+public void servicosSemTeste() {}
+```
+
+### Onde encontrar mais detalhes (Pointcut)
+
+- Spring Framework Reference (AOP): [https://docs.spring.io/spring-framework/reference/core/aop.html](https://docs.spring.io/spring-framework/reference/core/aop.html)
+- Spring @AspectJ Pointcuts: [https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/pointcuts.html)
+- AspectJ Pointcut Semantics: [https://eclipse.dev/aspectj/doc/released/progguide/semantics-pointcuts.html](https://eclipse.dev/aspectj/doc/released/progguide/semantics-pointcuts.html)
+
+---
+
+## Detalhes de Advice (como escolher o tipo)
+
+- `@Before`: validações, trilha de início, auditoria de entrada
+- `@After`: limpeza final (sempre executa, com sucesso ou erro)
+- `@AfterReturning`: usa o valor de retorno (`returning = "resultado"`)
+- `@AfterThrowing`: trata/loga exceção (`throwing = "ex"`)
+- `@Around`: mede tempo, altera fluxo, encapsula chamada (`proceed()`)
+
+Exemplos de binding em Advice:
+
+```java
+@AfterReturning(pointcut = "execution(* ..service..*(..))", returning = "resultado")
+public void aposSucesso(Object resultado) { }
+
+@AfterThrowing(pointcut = "execution(* ..service..*(..))", throwing = "ex")
+public void aposErro(Exception ex) { }
+```
+
+### Explicando os dois exemplos
+
+`@AfterReturning`:
+
+- Executa **somente quando o método termina com sucesso** (sem lançar exceção).
+- O atributo `pointcut` define **quais métodos** serão monitorados.
+- O atributo `returning = "resultado"` diz ao Spring para pegar o valor retornado pelo método interceptado e injetá-lo no parâmetro `resultado` do advice.
+- Uso comum: auditoria de sucesso, métricas de resposta e logging do retorno.
+
+Exemplo prático de leitura: se `produtoService.buscarPorId(10)` retornar um `Produto`, o objeto retornado chega em `resultado`.
+
+`@AfterThrowing`:
+
+- Executa **somente quando o método lança exceção**.
+- O atributo `pointcut` também define o conjunto de métodos interceptados.
+- O atributo `throwing = "ex"` vincula a exceção lançada ao parâmetro `ex` do advice.
+- Uso comum: logging de erro padronizado, auditoria de falhas e enriquecimento de observabilidade.
+
+Exemplo prático de leitura: se `produtoService.excluir(id)` lançar `RegraNegocioException`, essa exceção chega em `ex`, permitindo registrar `ex.getClass().getSimpleName()` e `ex.getMessage()`.
+
+Resumo rápido:
+
+- `@AfterReturning` trata o **caminho de sucesso**.
+- `@AfterThrowing` trata o **caminho de erro**.
+
+### Onde encontrar mais detalhes (Advice)
+
+- Spring @AspectJ Advice: [https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html](https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/advice.html)
+- API AspectJ de anotações: [https://eclipse.dev/aspectj/doc/released/aspectj5rt-api/org/aspectj/lang/annotation/package-summary.html](https://eclipse.dev/aspectj/doc/released/aspectj5rt-api/org/aspectj/lang/annotation/package-summary.html)
+- API de JoinPoint e ProceedingJoinPoint: [https://eclipse.dev/aspectj/doc/released/runtime-api/org/aspectj/lang/JoinPoint.html](https://eclipse.dev/aspectj/doc/released/runtime-api/org/aspectj/lang/JoinPoint.html)
+
+---
+
 # 6. Spring AOP
 
 ## O que é Spring AOP?
@@ -546,6 +687,25 @@ Regra prática:
 - Se for transversal e repetitivo, AOP ajuda.
 - Se for regra do domínio, mantenha no service/domain.
 
+## Desvantagens do uso de aspectos
+
+Apesar dos ganhos de organização, AOP também traz custos e riscos:
+
+* **Maior complexidade de entendimento:** o comportamento final pode estar distribuído entre service e aspectos, exigindo leitura de múltiplos pontos.
+* **Fluxo de execução menos explícito:** para quem lê apenas o método de negócio, parte da lógica técnica fica "invisível" (executada por advice).
+* **Debug mais trabalhoso:** em alguns cenários, o stack trace inclui proxies/interceptadores e dificulta rastrear causa raiz rapidamente.
+* **Risco de pointcut muito amplo:** expressões genéricas podem interceptar métodos demais e gerar efeitos colaterais.
+* **Overhead de execução:** cada interceptação adiciona custo (proxy + advice), principalmente perceptível em trechos de alta frequência.
+* **Dependência de convenções da equipe:** sem padrão claro, diferentes aspectos podem conflitar em ordem, granularidade e responsabilidade.
+* **Limitações do Spring AOP:** por ser proxy-based, não cobre todos os cenários (ex.: self-invocation, construtores, métodos privados).
+
+Como mitigar:
+
+* Definir pointcuts específicos e bem nomeados.
+* Evitar lógica pesada dentro do advice.
+* Documentar a ordem e o propósito de cada aspecto.
+* Monitorar desempenho em produção com métricas.
+
 ---
 
 # 12. Limitações do Spring AOP
@@ -595,15 +755,23 @@ Para cenários que exigem interceptar construtores ou self-invocations, utiliza-
 
 ## O que foi adicionado
 
-1. Dependência AOP no Maven:
+1. Dependências no Maven:
 
 - arquivo: `backend/produtos-api/pom.xml`
+- `org.springframework.boot:spring-boot-starter-aspectj`
+- `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0` (compatível com Spring Boot 4 / Spring 7)
 
 2. Aspecto de observabilidade:
 
 - arquivo: `backend/produtos-api/src/main/java/br/unifor/produtosapi/aspect/ObservabilidadeAspect.java`
 - intercepta métodos de `controller` e `service`
-- registra início/fim, tempo em ms e status de sucesso/erro
+- registra entrada de parâmetros, saída de retorno e tempo/status de execução
+
+3. Persistência de log em arquivo:
+
+- arquivo: `backend/produtos-api/src/main/resources/application.properties`
+- `logging.file.name=logs/produtos-api.log`
+- rotação configurada (`max-file-size`, `max-history`, `total-size-cap`)
 
 ## Código do aspecto
 
@@ -615,9 +783,19 @@ public class ObservabilidadeAspect {
     @Pointcut("within(br.unifor.produtosapi.controller..*) || within(br.unifor.produtosapi.service..*)")
     public void camadasApi() {}
 
+    @Before("camadasApi()")
+    public void logarEntradas(JoinPoint joinPoint) {
+        // registra todos os parametros recebidos
+    }
+
+    @AfterReturning(pointcut = "camadasApi()", returning = "retorno")
+    public void logarRetornos(JoinPoint joinPoint, Object retorno) {
+        // registra o retorno no caminho de sucesso
+    }
+
     @Around("camadasApi()")
     public Object registrarTempoEStatus(ProceedingJoinPoint joinPoint) throws Throwable {
-        // log de início
+        // mede tempo total e status (sucesso/erro)
         // executa método alvo
         // log de fim com tempo e status
     }
@@ -639,10 +817,12 @@ cd backend/produtos-api
 curl http://localhost:8080/tipos
 ```
 
-3. Mostrar logs no console:
+3. Mostrar logs no console e no arquivo:
 
-- `INICIO metodo=...`
+- `ENTRADA metodo=... parametros=[...]`
+- `SAIDA metodo=... retorno=...`
 - `FIM metodo=... tempoMs=... sucesso=true`
+- arquivo: `backend/produtos-api/logs/produtos-api.log`
 
 4. Forçar erro (id inexistente em update/delete) para mostrar:
 

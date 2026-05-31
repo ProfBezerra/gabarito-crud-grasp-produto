@@ -14,4 +14,11 @@ public class TipoProdutoRequest {
     public void setNome(String nome) {
         this.nome = nome;
     }
+
+    @Override
+    public String toString() {
+        return "TipoProdutoRequest{" +
+            "nome='" + nome + '\'' +
+            '}';
+    }
 }
